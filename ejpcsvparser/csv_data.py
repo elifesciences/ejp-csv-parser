@@ -106,11 +106,7 @@ def get_csv_sheet(table_type):
             for index, cell in enumerate(row):
                 # Strip leading quotation marks
                 row[index] = cell.lstrip('"').rstrip('"')
-            try:
-                sheet[csvreader.line_num-1] = row
-            except IndexError:
-                # Last line may not exist so handle the error
-                pass
+            sheet[csvreader.line_num-1] = row
     return sheet
 
 
