@@ -26,6 +26,7 @@ def instantiate_article(article_id):
         return article
     except:
         logger.error("could not create article class")
+        return None
 
 
 def set_title(article, article_id):
@@ -131,7 +132,7 @@ def set_ethics(article, article_id):
                 article.add_ethic(e)
         return True
     except:
-        # logger.error("could not set ethics")
+        logger.error("could not set ethics")
         return False
 
 
@@ -458,9 +459,9 @@ def parse_group_authors(group_authors):
     Return a dictionary of dict[author_position] = collab_name
     """
     group_author_dict = {}
-    if group_authors.strip() == "":
+    if not group_authors:
         group_author_dict = None
-    elif group_authors.strip() == "0":
+    elif group_authors.strip() == "" or group_authors.strip() == "0":
         group_author_dict = None
     else:
 
@@ -522,28 +523,6 @@ def build_article(article_id):
     # default conflict text
     if article:
         article.conflict_default = "The authors declare that no competing interests exist."
-
-    # debug
-    print 'DEBUG title: ', article.title
-    print 'DEBUG abstract: ', article.abstract
-    print 'DEBUG article_type: ', article.article_type
-    print 'DEBUG license: ', article.license
-    print 'DEBUG license.href: ', article.license.href
-    print 'DEBUG dates: ', article.dates
-    print 'DEBUG ethics: ', article.ethics
-    print 'DEBUG datasets: ', article.datasets
-    print 'DEBUG article_categories: ', article.article_categories
-    print 'DEBUG research_organisms: ', article.research_organisms
-    print 'DEBUG contributor count: ', len(article.contributors)
-    print 'DEBUG contributors: ', article.contributors
-    authors = [contrib for contrib in article.contributors if contrib.contrib_type == 'author']
-    print 'DEBUG author count: ', len(authors)
-    print 'DEBUG authors: ', authors
-    editors = [contrib for contrib in article.contributors if contrib.contrib_type == 'editor']
-    print 'DEBUG editor count: ', len(editors)
-    print 'DEBUG editors: ', editors
-    print 'DEBUG author_keywords: ', article.author_keywords
-    print 'DEBUG funding_awards: ', article.funding_awards
 
     if error_count == 0:
         return article, error_count, error_messages
