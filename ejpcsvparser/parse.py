@@ -89,6 +89,31 @@ def set_license(article, article_id):
     try:
         license_id = data.get_license(article_id)
         license_object = ea.License(license_id)
+
+        # Boilerplate license values based on the license_id
+        if int(license_id) == 1:
+            license_object.license_id = license_id
+            license_object.license_type = "open-access"
+            license_object.copyright = True
+            license_object.href = "http://creativecommons.org/licenses/by/4.0/"
+            license_object.name = "Creative Commons Attribution License"
+            license_object.paragraph1 = "This article is distributed under the terms of the "
+            license_object.paragraph2 = (
+                " permitting unrestricted use and redistribution provided that the " +
+                "original author and source are credited.")
+        elif int(license_id) == 2:
+            license_object.license_id = license_id
+            license_object.license_type = "open-access"
+            license_object.copyright = False
+            license_object.href = "http://creativecommons.org/publicdomain/zero/1.0/"
+            license_object.name = "Creative Commons CC0"
+            license_object.paragraph1 = (
+                "This is an open-access article, free of all copyright, and may be " +
+                "freely reproduced, distributed, transmitted, modified, built upon, or " +
+                "otherwise used by anyone for any lawful purpose. The work is made " +
+                "available under the ")
+            license_object.paragraph2 = " public domain dedication."
+
         article.license = license_object
         return True
     except:
