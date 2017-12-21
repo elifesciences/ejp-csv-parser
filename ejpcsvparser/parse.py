@@ -1,5 +1,6 @@
 import logging
 import time
+from collections import OrderedDict
 from xml.dom import minidom
 from elifearticle import article as ea
 from elifetools import utils as etoolsutils
@@ -58,7 +59,7 @@ def set_article_type(article, article_id):
         article_type_id = data.get_article_type(article_id)
 
         # Boilerplate article-type values based on id in CSV file
-        article_type_index = {}
+        article_type_index = OrderedDict()
 
         article_type_index['1'] = {
             'article_type':    'research-article',
@@ -350,7 +351,7 @@ def set_funding(article, article_id):
         funder_ids = data.get_funding_ids(article_id)
 
         # Keep track of funding awards by position in a dict
-        funding_awards = {}
+        funding_awards = OrderedDict()
 
         # First pass, build the funding awards
         for (article_id, author_id, funder_position) in funder_ids:
@@ -483,7 +484,7 @@ def parse_group_authors(group_authors):
     If not empty, remove extra numbers from the end of the string
     Return a dictionary of dict[author_position] = collab_name
     """
-    group_author_dict = {}
+    group_author_dict = OrderedDict()
     if not group_authors:
         group_author_dict = None
     elif group_authors.strip() == "" or group_authors.strip() == "0":

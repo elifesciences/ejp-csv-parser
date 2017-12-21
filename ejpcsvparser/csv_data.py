@@ -1,6 +1,6 @@
 import logging
 import csv
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import ejpcsvparser.utils as utils
 import ejpcsvparser.settings as settings
 
@@ -22,10 +22,10 @@ logger.setLevel(logging.INFO)
 
 def memoize(f):
     "Memoization decorator for functions taking one or more arguments."
-    class Memodict(dict):
+    class Memodict(OrderedDict):
         "Memoization dict"
         def __init__(self, f):
-            dict.__init__(self)
+            OrderedDict.__init__(self)
             self.f = f
         def __call__(self, *args):
             return self[args]
@@ -152,7 +152,7 @@ def index_authors_on_author_id():
     author_table = index_authors_on_article_id()
 
     article_ids = author_table.keys()
-    article_author_index = {}  # this is the key item we will return our of this function
+    article_author_index = OrderedDict()  # this is the key item we will return our of this function
     for article_id in article_ids:
         rows = author_table[article_id]
         author_index = defaultdict()
@@ -428,7 +428,7 @@ def index_funding_table():
     # logger.info("data_rows: " + str(data_rows))
     logger.info("col_names: " + str(col_names))
 
-    article_index = {}
+    article_index = OrderedDict()
     for data_row in data_rows:
         article_id = get_cell_value('poa_m_ms_no', col_names, data_row)
         author_id = get_cell_value(COLUMN_HEADINGS["author_id"], col_names, data_row)
@@ -436,9 +436,9 @@ def index_funding_table():
 
         # Crude multidimentional dict builder
         if article_id not in article_index:
-            article_index[article_id] = {}
+            article_index[article_id] = OrderedDict()
         if author_id not in article_index[article_id]:
-            article_index[article_id][author_id] = {}
+            article_index[article_id][author_id] = OrderedDict()
 
         article_index[article_id][author_id][funder_position] = data_row
 
