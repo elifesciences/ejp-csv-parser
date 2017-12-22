@@ -286,7 +286,7 @@ class TestCsvData(unittest.TestCase):
     def test_index_funding_table(self):
         article_index = data.index_funding_table()
         self.assertIsNotNone(article_index)
-        self.assertEqual(article_index.keys(), ['7', '12717', '14874', '14997', '21598'])
+        self.assertEqual(list(article_index.keys()), ['7', '12717', '14874', '14997', '21598'])
 
     def test_get_funding_ids(self):
         article_id = '12717'

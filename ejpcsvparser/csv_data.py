@@ -87,13 +87,15 @@ def get_csv_sheet(table_type):
     logger.info("in get_csv_sheet")
     path = get_csv_path(table_type)
     logger.info(str(path))
-    csvreader = csv.reader(open(path, 'rb'), delimiter=',', quotechar='"')
-    sheet = []
-    for row in csvreader:
-        sheet.append(row)
+    with open(path) as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        sheet = []
+        for row in csvreader:
+            sheet.append(row)
     # For overflow file types, parse again with no quotechar
     if table_type in OVERFLOW_CSV_FILES:
-        csvreader = csv.reader(open(path, 'rb'), delimiter=',', quotechar=None)
+        csvfile = open(path)
+        csvreader = csv.reader(csvfile, delimiter=',', quotechar=None)
         if table_type == "ethics":
             join_cells_from = 3
         else:
@@ -107,6 +109,7 @@ def get_csv_sheet(table_type):
                 # Strip leading quotation marks
                 row[index] = cell.lstrip('"').rstrip('"')
             sheet[csvreader.line_num-1] = row
+        csvfile.close()
     return sheet
 
 
