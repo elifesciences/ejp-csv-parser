@@ -134,8 +134,7 @@ def index_table_on_article_id(table_type):
     for data_row in data_rows:
         article_id = get_cell_value('poa_m_ms_no', col_names, data_row)
         # author_id = get_cell_value("poa_a_id", col_names, data_row)
-        if article_id and article_id.strip() != '':
-            article_index[article_id].append(data_row)
+        article_index[article_id].append(data_row)
         # print article_id, author_id
     return article_index
 
