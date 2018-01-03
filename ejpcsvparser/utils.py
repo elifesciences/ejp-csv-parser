@@ -24,7 +24,7 @@ def allowed_tags():
 def repl(match):
     # Convert hex to int to unicode character
     chr_code = int(match.group(1), 16)
-    return unichr(chr_code)
+    return eautils.uni_chr(chr_code)
 
 
 def entity_to_unicode(string):
@@ -67,6 +67,7 @@ def decode_brackets(string):
     Decode angle bracket escape sequence
     used to encode XML content
     """
+    string = eautils.unicode_value(string)
     string = string.replace(settings.LESS_THAN_ESCAPE_SEQUENCE, '<')
     string = string.replace(settings.GREATER_THAN_ESCAPE_SEQUENCE, '>')
     return string
@@ -84,7 +85,7 @@ def convert_to_xml_string(string):
     issue a set of conversion functions to prepare it prior
     to adding it to an article object
     """
-    string = entity_to_unicode(string).encode('utf-8')
+    string = entity_to_unicode(string)
     string = decode_brackets(string)
     string = eautils.replace_tags(string, 'i', 'italic')
     string = eautils.replace_tags(string, 'u', 'underline')

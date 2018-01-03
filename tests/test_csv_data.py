@@ -41,11 +41,13 @@ class TestCsvData(unittest.TestCase):
 
     def test_index_authors_on_article_id(self):
         expected_row_count = 9
-        self.assertEqual(len(data.index_authors_on_article_id()), expected_row_count)
+        article_index = data.index_authors_on_article_id()
+        self.assertEqual(len(article_index), expected_row_count)
 
     def test_index_authors_on_author_id(self):
         expected_row_count = 9
-        self.assertEqual(len(data.index_authors_on_author_id()), expected_row_count)
+        article_author_index = data.index_authors_on_author_id()
+        self.assertEqual(len(article_author_index), expected_row_count)
 
     def test_get_article_attributes(self):
         article_id = 3
@@ -286,7 +288,7 @@ class TestCsvData(unittest.TestCase):
     def test_index_funding_table(self):
         article_index = data.index_funding_table()
         self.assertIsNotNone(article_index)
-        self.assertEqual(article_index.keys(), ['21598', '14874', '12717', '7', '14997'])
+        self.assertEqual(list(article_index.keys()), ['7', '12717', '14874', '14997', '21598'])
 
     def test_get_funding_ids(self):
         article_id = '12717'
