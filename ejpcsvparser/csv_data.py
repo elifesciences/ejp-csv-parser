@@ -136,6 +136,8 @@ def index_table_on_article_id(table_type):
         # author_id = get_cell_value("poa_a_id", col_names, data_row)
         article_index[article_id].append(data_row)
         # print article_id, author_id
+    if table_type == 'authors':
+        print(article_index.keys())
     return article_index
 
 
