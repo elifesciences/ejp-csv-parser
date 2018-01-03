@@ -272,9 +272,9 @@ def set_author_info(article, article_id):
             # Add the author to the dictionary recording their position in the list
             authors_dict[int(author_position)] = author
 
-        """
         # Add group author collab contributors, if present
         group_authors = data.get_group_authors(article_id)
+        print(article_id, 'group_authors', group_authors)
         if group_authors:
             # Parse the group authors string
             group_author_dict = parse_group_authors(group_authors)
@@ -289,7 +289,6 @@ def set_author_info(article, article_id):
 
                     # Add the author to the dictionary recording their position in the list
                     authors_dict[int(author_position)] = author
-        """
 
         # Finally add authors to the article sorted by their position
         for author_position in sorted(authors_dict.keys()):
