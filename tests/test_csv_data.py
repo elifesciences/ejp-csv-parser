@@ -41,11 +41,17 @@ class TestCsvData(unittest.TestCase):
 
     def test_index_authors_on_article_id(self):
         expected_row_count = 9
-        self.assertEqual(len(data.index_authors_on_article_id()), expected_row_count)
+        article_index = data.index_authors_on_author_id()
+        print("test_index_authors_on_author_id length: ", len(article_index))
+        print(article_index.keys())
+        self.assertEqual(len(article_index), expected_row_count)
 
     def test_index_authors_on_author_id(self):
         expected_row_count = 9
-        self.assertEqual(len(data.index_authors_on_author_id()), expected_row_count)
+        article_index = data.index_authors_on_author_id()
+        print("test_index_authors_on_author_id length: ", len(article_index))
+        print(article_index.keys())
+        self.assertEqual(len(article_index), expected_row_count)
 
     def test_get_article_attributes(self):
         article_id = 3
@@ -328,7 +334,6 @@ class TestCsvData(unittest.TestCase):
         article_id = '12717'
         expected = 'The funders had no role in study design, data collection and interpretation, or the decision to submit the work for publication.'
         self.assertEqual(data.get_funding_note(article_id), expected)
-
 
 if __name__ == '__main__':
     unittest.main()
