@@ -141,7 +141,8 @@ def index_table_on_article_id(table_type):
 
 @memoize
 def index_authors_on_article_id():
-    return index_table_on_article_id("authors")
+    article_index = index_table_on_article_id("authors")
+    return article_index
 
 @memoize
 def index_authors_on_author_id():
