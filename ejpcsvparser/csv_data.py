@@ -22,10 +22,10 @@ logger.setLevel(logging.INFO)
 
 def memoize(f):
     "Memoization decorator for functions taking one or more arguments."
-    class Memodict(OrderedDict):
+    class Memodict(dict):
         "Memoization dict"
         def __init__(self, f):
-            OrderedDict.__init__(self)
+            dict.__init__(self)
             self.f = f
         def __call__(self, *args):
             return self[args]
