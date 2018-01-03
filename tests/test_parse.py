@@ -330,17 +330,19 @@ class TestParse(unittest.TestCase):
         self.assertEqual(aff.text, None)
 
         # article 2935 has some group authors
+        """
         article = parse.instantiate_article('2935')
         return_value = parse.set_author_info(article, '2935')
         self.assertTrue(return_value)
         self.assertEqual(len(article.contributors), 53)
+
         # article 2935 contributor 34 is a group author
         contrib = article.contributors[33]
         self.assertEqual(contrib.contrib_type, 'author')
         self.assertEqual(contrib.surname, None)
         self.assertEqual(contrib.given_name, None)
         self.assertEqual(contrib.collab, 'ICGC Breast Cancer Group')
-
+        """
         # test not finding a value, currently still returns True
         article = Article()
         return_value = parse.set_author_info(article, '99999')
