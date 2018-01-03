@@ -274,7 +274,7 @@ def set_author_info(article, article_id):
 
         # Add group author collab contributors, if present
         group_authors = data.get_group_authors(article_id)
-        print("group_authors:", group_authors)
+        print(article_id, "group_authors:", group_authors)
         if group_authors:
             # Parse the group authors string
             group_author_dict = parse_group_authors(group_authors)
