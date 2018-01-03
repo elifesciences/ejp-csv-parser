@@ -334,6 +334,7 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_author_info(article, '2935')
         self.assertTrue(return_value)
         self.assertEqual(len(article.contributors), 53)
+
         # article 2935 contributor 34 is a group author
         contrib = article.contributors[33]
         self.assertEqual(contrib.contrib_type, 'author')

@@ -1,6 +1,6 @@
 import logging
 import csv
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import ejpcsvparser.utils as utils
 import ejpcsvparser.settings as settings
 
@@ -87,13 +87,15 @@ def get_csv_sheet(table_type):
     logger.info("in get_csv_sheet")
     path = get_csv_path(table_type)
     logger.info(str(path))
-    csvreader = csv.reader(open(path, 'rb'), delimiter=',', quotechar='"')
-    sheet = []
-    for row in csvreader:
-        sheet.append(row)
+    with open(path) as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        sheet = []
+        for row in csvreader:
+            sheet.append(row)
     # For overflow file types, parse again with no quotechar
     if table_type in OVERFLOW_CSV_FILES:
-        csvreader = csv.reader(open(path, 'rb'), delimiter=',', quotechar=None)
+        csvfile = open(path)
+        csvreader = csv.reader(csvfile, delimiter=',', quotechar=None)
         if table_type == "ethics":
             join_cells_from = 3
         else:
@@ -107,6 +109,7 @@ def get_csv_sheet(table_type):
                 # Strip leading quotation marks
                 row[index] = cell.lstrip('"').rstrip('"')
             sheet[csvreader.line_num-1] = row
+        csvfile.close()
     return sheet
 
 
@@ -133,12 +136,18 @@ def index_table_on_article_id(table_type):
         # author_id = get_cell_value("poa_a_id", col_names, data_row)
         article_index[article_id].append(data_row)
         # print article_id, author_id
+    if table_type == 'authors':
+        print("index_table_on_article_id length: ", len(article_index))
+        print(article_index.keys())
     return article_index
 
 
 @memoize
 def index_authors_on_article_id():
-    return index_table_on_article_id("authors")
+    article_index = index_table_on_article_id("authors")
+    print("index_authors_on_article_id length: ", len(article_index))
+    print(article_index.keys())
+    return article_index
 
 @memoize
 def index_authors_on_author_id():
@@ -152,7 +161,7 @@ def index_authors_on_author_id():
     author_table = index_authors_on_article_id()
 
     article_ids = author_table.keys()
-    article_author_index = {}  # this is the key item we will return our of this function
+    article_author_index = OrderedDict()  # this is the key item we will return our of this function
     for article_id in article_ids:
         rows = author_table[article_id]
         author_index = defaultdict()
@@ -310,6 +319,12 @@ def get_author_ids(article_id):
 
 def get_author_attribute(article_id, author_id, attribute_name):
     article_author_index = index_authors_on_author_id()
+    # check for if the data row exists first
+    if article_id not in article_author_index:
+        return None
+    if author_id not in article_author_index[article_id]:
+        return None
+    # continue
     data_row = article_author_index[article_id][author_id]
     col_names = get_csv_col_names("authors")
     attribute = get_cell_value(attribute_name, col_names, data_row)
@@ -428,7 +443,7 @@ def index_funding_table():
     # logger.info("data_rows: " + str(data_rows))
     logger.info("col_names: " + str(col_names))
 
-    article_index = {}
+    article_index = OrderedDict()
     for data_row in data_rows:
         article_id = get_cell_value('poa_m_ms_no', col_names, data_row)
         author_id = get_cell_value(COLUMN_HEADINGS["author_id"], col_names, data_row)
@@ -436,9 +451,9 @@ def index_funding_table():
 
         # Crude multidimentional dict builder
         if article_id not in article_index:
-            article_index[article_id] = {}
+            article_index[article_id] = OrderedDict()
         if author_id not in article_index[article_id]:
-            article_index[article_id][author_id] = {}
+            article_index[article_id][author_id] = OrderedDict()
 
         article_index[article_id][author_id][funder_position] = data_row
 
