@@ -137,13 +137,17 @@ def index_table_on_article_id(table_type):
         article_index[article_id].append(data_row)
         # print article_id, author_id
     if table_type == 'authors':
+        print("index_table_on_article_id length: ", len(article_index))
         print(article_index.keys())
     return article_index
 
 
 @memoize
 def index_authors_on_article_id():
-    return index_table_on_article_id("authors")
+    article_index = index_table_on_article_id("authors")
+    print("index_authors_on_article_id length: ", len(article_index))
+    print(article_index.keys())
+    return article_index
 
 @memoize
 def index_authors_on_author_id():
