@@ -319,6 +319,12 @@ def get_author_ids(article_id):
 
 def get_author_attribute(article_id, author_id, attribute_name):
     article_author_index = index_authors_on_author_id()
+    # check for if the data row exists first
+    if article_id not in article_author_index:
+        return None
+    if author_id not in article_author_index[article_id]:
+        return None
+    # continue
     data_row = article_author_index[article_id][author_id]
     col_names = get_csv_col_names("authors")
     attribute = get_cell_value(attribute_name, col_names, data_row)

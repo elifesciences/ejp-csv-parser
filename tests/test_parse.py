@@ -342,9 +342,9 @@ class TestParse(unittest.TestCase):
         self.assertEqual(contrib.collab, 'ICGC Breast Cancer Group')
 
         # test not finding a value, currently still returns True
-        #article = Article()
-        #return_value = parse.set_author_info(article, '99999')
-        #self.assertTrue(return_value)
+        article = Article()
+        return_value = parse.set_author_info(article, '99999')
+        self.assertTrue(return_value)
 
 
     @patch('ejpcsvparser.csv_data.get_author_ids')
