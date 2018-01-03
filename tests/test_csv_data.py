@@ -41,8 +41,8 @@ class TestCsvData(unittest.TestCase):
 
     def test_index_authors_on_article_id(self):
         expected_row_count = 9
-        article_index = data.index_authors_on_author_id()
-        print("test_index_authors_on_author_id length: ", len(article_index))
+        article_index = data.index_authors_on_article_id()
+        print("test_index_authors_on_article_id length: ", len(article_index))
         print(article_index.keys())
         self.assertEqual(len(article_index), expected_row_count)
 
