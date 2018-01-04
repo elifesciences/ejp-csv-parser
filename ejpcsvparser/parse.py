@@ -223,8 +223,12 @@ def set_author_info(article, article_id):
     """
     logger.info("in set_author_info")
     authors_dict = {}
+
+    author_ids = data.get_author_ids(article_id)
+    if not author_ids and not data.get_group_authors(article_id):
+        return False
+
     try:
-        author_ids = data.get_author_ids(article_id)
         for author_id in author_ids:
 
             author_type = "author"
