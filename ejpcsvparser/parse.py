@@ -1,7 +1,10 @@
+from __future__ import print_function
 import logging
 import time
+from collections import OrderedDict
 from xml.dom import minidom
 from elifearticle import article as ea
+from elifearticle import utils as eautils
 from elifetools import utils as etoolsutils
 import ejpcsvparser.utils as utils
 import ejpcsvparser.csv_data as data
@@ -58,7 +61,7 @@ def set_article_type(article, article_id):
         article_type_id = data.get_article_type(article_id)
 
         # Boilerplate article-type values based on id in CSV file
-        article_type_index = {}
+        article_type_index = OrderedDict()
 
         article_type_index['1'] = {
             'article_type':    'research-article',
@@ -220,8 +223,14 @@ def set_author_info(article, article_id):
     """
     logger.info("in set_author_info")
     authors_dict = {}
+
+    # check there are any authors before continuing
+    author_ids = data.get_author_ids(article_id)
+    if not author_ids and not data.get_group_authors(article_id):
+        logger.error("could not find any author data")
+        return False
+
     try:
-        author_ids = data.get_author_ids(article_id)
         for author_id in author_ids:
 
             author_type = "author"
@@ -262,7 +271,7 @@ def set_author_info(article, article_id):
             if orcid.strip() != "":
                 author.orcid = orcid
 
-            author.auth_id = `int(author_id)`
+            author.auth_id = author_id
             author.set_affiliation(affiliation)
 
             author_position = data.get_author_position(article_id, author_id)
@@ -276,22 +285,20 @@ def set_author_info(article, article_id):
             group_author_dict = parse_group_authors(group_authors)
 
             if group_author_dict:
-                for author_position, collab_name in sorted(
-                        group_author_dict.items(), key=group_author_dict.get):
-
+                for author_position in sorted(group_author_dict.keys()):
                     author_type = "author"
                     last_name = None
                     first_name = None
-                    collab = collab_name
+                    collab = group_author_dict.get(author_position)
                     author = ea.Contributor(author_type, last_name, first_name, collab)
 
                     # Add the author to the dictionary recording their position in the list
                     authors_dict[int(author_position)] = author
 
         # Finally add authors to the article sorted by their position
-        for author_position, author in sorted(authors_dict.items(), key=authors_dict.get):
+        for author_position in sorted(authors_dict.keys()):
             #print article_id, author_position, author
-            article.add_contributor(author)
+            article.add_contributor(authors_dict.get(author_position))
 
         return True
     except:
@@ -313,11 +320,11 @@ def set_editor_info(article, article_id):
             first_name += " " + middle_name
         # create an instance of the POSContributor class
         editor = ea.Contributor(author_type, last_name, first_name)
-        logger.info("editor is: " + str(editor))
+        logger.info("editor is: " + eautils.unicode_value(editor))
         logger.info("getting ed id for article " + str(article_id))
         logger.info("editor id is " + str(data.get_me_id(article_id)))
         logger.info(str(type(data.get_me_id(article_id))))
-        editor.auth_id = `int(data.get_me_id(article_id))`
+        editor.auth_id = data.get_me_id(article_id)
         affiliation = ea.Affiliation()
         department = data.get_me_department(article_id)
         if department.strip() != "":
@@ -350,7 +357,7 @@ def set_funding(article, article_id):
         funder_ids = data.get_funding_ids(article_id)
 
         # Keep track of funding awards by position in a dict
-        funding_awards = {}
+        funding_awards = OrderedDict()
 
         # First pass, build the funding awards
         for (article_id, author_id, funder_position) in funder_ids:
@@ -371,16 +378,16 @@ def set_funding(article, article_id):
                     funding_awards[funder_position].add_award_id(award_id)
 
         # Second pass, add the primary award recipients in article author order
-        for position, award in funding_awards.iteritems():
+        for position in sorted(funding_awards.keys()):
+            award = funding_awards.get(position)
             for contrib in article.contributors:
                 for (article_id, author_id, funder_position) in funder_ids:
                     if position == funder_position and contrib.auth_id == author_id:
                         funding_awards[position].add_principal_award_recipient(contrib)
 
         # Add funding awards to the article object, sorted by position
-        for position, award in sorted(funding_awards.iteritems()):
-            article.add_funding_award(award)
-
+        for position in sorted(funding_awards.keys()):
+            article.add_funding_award(funding_awards.get(position))
         return True
     except:
         logger.error("could not set funding")
@@ -483,7 +490,7 @@ def parse_group_authors(group_authors):
     If not empty, remove extra numbers from the end of the string
     Return a dictionary of dict[author_position] = collab_name
     """
-    group_author_dict = {}
+    group_author_dict = OrderedDict()
     if not group_authors:
         group_author_dict = None
     elif group_authors.strip() == "" or group_authors.strip() == "0":
@@ -543,7 +550,7 @@ def build_article(article_id):
     if article:
         article.is_poa = True
 
-    print error_count
+    print(error_count)
 
     # default conflict text
     if article:
