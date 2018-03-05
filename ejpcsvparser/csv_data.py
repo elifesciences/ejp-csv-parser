@@ -1,5 +1,6 @@
 import logging
 import csv
+import io, sys
 from collections import defaultdict, OrderedDict
 import ejpcsvparser.utils as utils
 import ejpcsvparser.settings as settings
@@ -87,7 +88,14 @@ def get_csv_sheet(table_type):
     logger.info("in get_csv_sheet")
     path = get_csv_path(table_type)
     logger.info(str(path))
-    with open(path) as csvfile:
+
+    if sys.version_info[0] < 3:
+        handle = open(path, 'rb')
+    else:
+        #https://docs.python.org/3/library/functions.html#open
+        handle = io.open(path, 'r', newline='', encoding='utf-8', errors='surrogateescape')
+
+    with handle as csvfile:
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
         sheet = []
         for row in csvreader:
