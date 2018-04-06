@@ -170,9 +170,11 @@ def set_datasets(article, article_id):
         datasets = data.get_datasets(article_id)
         logger.info(datasets)
         if datasets:
-            dataset_objects = parse_datasets(datasets)
+            dataset_objects, data_availability = parse_datasets(datasets)
             for dataset in dataset_objects:
                 article.add_dataset(dataset)
+            if data_availability:
+                article.data_availability = data_availability
         return True
     except:
         logger.error("could not set datasets")
@@ -437,6 +439,7 @@ def parse_datasets(datasets_content):
     Datasets content is XML with escaped angle brackets
     """
     datasets = []
+    data_availability = None
 
     # Decode escaped angle brackets
     logger.info("datasets is " + str(datasets_content))
@@ -482,7 +485,13 @@ def parse_datasets(datasets_content):
 
             datasets.append(dataset)
 
-    return datasets
+    # Parse the data availability statement
+    if reparsed.getElementsByTagName('data_availability_textbox'):
+        data_availability_node = reparsed.getElementsByTagName('data_availability_textbox')
+        if data_availability_node[0].childNodes:
+            data_availability = utils.entity_to_unicode(data_availability_node[0].childNodes[0].nodeValue)
+
+    return datasets, data_availability
 
 def parse_group_authors(group_authors):
     """
