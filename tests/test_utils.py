@@ -20,6 +20,16 @@ class TestUtils(unittest.TestCase):
         for string_input, string_output in self.passes:
             self.assertEqual(utils.entity_to_unicode(string_input), string_output)
 
+    def test_escape_angle_brackets(self):
+        self.passes = []
+        self.passes.append((None, None))
+        self.passes.append(('N-terminal &#x03B1;-helix into the heterodimer interface',
+                           u'N-terminal &#x03B1;-helix into the heterodimer interface'))
+        self.passes.append(('<i>i</i>',
+                           u'&lt;i&gt;i&lt;/i&gt;'))
+        for string_input, string_output in self.passes:
+            self.assertEqual(utils.escape_angle_brackets(string_input), string_output)
+
     def test_get_elife_doi(self):
         article_id = 3
         expected = '10.7554/eLife.00003'
