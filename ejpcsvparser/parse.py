@@ -174,7 +174,7 @@ def set_datasets(article, article_id):
             for dataset in dataset_objects:
                 article.add_dataset(dataset)
             if data_availability:
-                article.data_availability = data_availability
+                article.data_availability = utils.convert_to_xml_string(data_availability)
         return True
     except:
         logger.error("could not set datasets")
@@ -443,7 +443,8 @@ def parse_datasets(datasets_content):
 
     # Decode escaped angle brackets
     logger.info("datasets is " + str(datasets_content))
-    datasets_xml = utils.unserialise_angle_brackets(datasets_content)
+    datasets_xml = utils.escape_angle_brackets(datasets_content)
+    datasets_xml = utils.unserialise_angle_brackets(datasets_xml)
     datasets_xml = etoolsutils.escape_ampersand(datasets_xml)
     logger.info("datasets is " + str(datasets_xml))
 

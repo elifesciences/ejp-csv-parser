@@ -223,7 +223,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(article.datasets[1].title, 'Spatial gene expression gradients underlie prominent heterogeneity of CA1 pyramidal neurons')
         self.assertEqual(article.datasets[1].license_info, 'GSE67403')
         # check data availability
-        self.assertEqual(article.data_availability, 'Data Availability text here & such')
+        self.assertEqual(article.data_availability, 'Data Availability text <italic>here</italic> & such')
 
         # test not finding a value, currently still returns True
         article = Article()
