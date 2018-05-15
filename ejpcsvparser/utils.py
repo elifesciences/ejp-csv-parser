@@ -95,6 +95,14 @@ def convert_to_xml_string(string):
     return string
 
 
+def escape_angle_brackets(string):
+    "replace angle brackets only for when parsing escaped XML from CSV files"
+    try:
+        return string.replace('<', '&lt;').replace('>', '&gt;')
+    except AttributeError:
+        return string
+
+
 def get_elife_doi(article_id):
     """
     Given an article_id, return a DOI for the eLife journal
