@@ -23,6 +23,7 @@ class TestUtils(unittest.TestCase):
     def test_escape_angle_brackets(self):
         self.passes = []
         self.passes.append((None, None))
+        self.passes.append((0, 0))
         self.passes.append(('N-terminal &#x03B1;-helix into the heterodimer interface',
                            u'N-terminal &#x03B1;-helix into the heterodimer interface'))
         self.passes.append(('<i>i</i>',
