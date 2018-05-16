@@ -104,7 +104,7 @@ def get_csv_sheet(table_type):
     if table_type in OVERFLOW_CSV_FILES:
         csvfile = open(path)
         csvreader = csv.reader(csvfile, delimiter=',', quotechar=None)
-        if table_type == "ethics":
+        if table_type in ["ethics", "datasets"]:
             join_cells_from = 3
         else:
             join_cells_from = 2

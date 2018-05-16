@@ -24,7 +24,7 @@ CSV_FILES = {
 }
 
 # Special files that allow quotation marks in their final column: column 3
-OVERFLOW_CSV_FILES = ["abstract", "title", "ethics"]
+OVERFLOW_CSV_FILES = ["abstract", "title", "ethics", "datasets"]
 
 CSV_COLUMN_HEADINGS = {
     "author_position" : "poa_a_seq",
