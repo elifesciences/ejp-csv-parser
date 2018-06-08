@@ -7,6 +7,8 @@ GREATER_THAN_ESCAPE_SEQUENCE = 'GTGT'
 
 CSV_PATH = "tests/test_data/"
 
+TMP_DIR = "tests/tmp/"
+
 CSV_FILES = {
     "authors" : "poa_author.csv",
     "license" : "poa_license.csv",
