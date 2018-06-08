@@ -14,7 +14,6 @@ DATA_START_ROW = settings.DATA_START_ROW
 CSV_FILES = settings.CSV_FILES
 COLUMN_HEADINGS = settings.CSV_COLUMN_HEADINGS
 OVERFLOW_CSV_FILES = settings.OVERFLOW_CSV_FILES
-CSV_CLEAN_FILE_LIST = []
 
 logger = logging.getLogger('csv_data')
 hdlr = logging.FileHandler('csv_data.log')
@@ -127,21 +126,15 @@ def flatten_lines(iterable, data_start_row=DATA_START_ROW):
     clean_csv_data += prev_line
     return clean_csv_data
 
-
+@memoize
 def clean_csv(path):
     "fix CSV file oddities making it difficult to parse"
     clean_csv_data = ''
     new_path = os.path.join(settings.TMP_DIR, path.split('/')[-1])
-    # Return the cleaned file name if it is already cleaned
-    if path in CSV_CLEAN_FILE_LIST:
-        return new_path
     with open(path, 'rb') as open_read_file:
         clean_csv_data = flatten_lines(open_read_file)
     with open(new_path, 'wb') as open_write_file:
         open_write_file.write(clean_csv_data.encode('latin-1'))
-    # log file is cleaned in the global to not repeat
-    if path not in CSV_CLEAN_FILE_LIST:
-        CSV_CLEAN_FILE_LIST.append(path)
     return new_path
 
 
