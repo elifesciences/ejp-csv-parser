@@ -1,12 +1,14 @@
 import logging
 import csv
 import io, sys
+import os
 from collections import defaultdict, OrderedDict
 import ejpcsvparser.utils as utils
 import ejpcsvparser.settings as settings
 
 # todo!! clean up these values and the settings
 CSV_PATH = settings.CSV_PATH
+TMP_DIR = settings.TMP_DIR
 ROWS_WITH_COLNAMES = settings.ROWS_WITH_COLNAMES
 DATA_START_ROW = settings.DATA_START_ROW
 CSV_FILES = settings.CSV_FILES
@@ -83,11 +85,66 @@ def get_cell_value(col_name, col_names, row):
     return cell_value
 
 
+def join_lines(line_one, line_two, line_number, data_start_row=DATA_START_ROW):
+    "join multiple lines together taking into account the header rows"
+    if line_number <= data_start_row:
+        # keep blank lines found in the headers
+        content = line_two
+    else:
+        if line_two.lstrip() == '':
+            # blank line outside of the header convert to a space
+            content = line_one.rstrip("\r\n") + u' '
+        else:
+            content = line_one.rstrip("\r\n") + line_two.lstrip()
+    return content
+
+
+def do_add_line(content, line_number, data_start_row=DATA_START_ROW):
+    "decide if the line should be added to the output"
+    add_line = False
+    if line_number <= data_start_row or content.rstrip().endswith('"'):
+        add_line = True
+    return add_line
+
+
+def flatten_lines(iterable, data_start_row=DATA_START_ROW):
+    "iterate through an open file and join lines"
+    clean_csv_data = u''
+    line_number = 1
+    prev_line = u''
+    add_line = False
+    for content in iterable:
+        content = utils.decode_cp1252(content)
+        # add the line based on the previous iteration value
+        if add_line:
+            clean_csv_data += prev_line
+            prev_line = u''
+        prev_line = join_lines(prev_line, content, line_number, data_start_row)
+        add_line = do_add_line(content, line_number, data_start_row)
+        line_number += 1
+    # Add the final line
+    clean_csv_data += prev_line
+    return clean_csv_data
+
+@memoize
+def clean_csv(path):
+    "fix CSV file oddities making it difficult to parse"
+    clean_csv_data = u''
+    new_path = os.path.join(settings.TMP_DIR, path.split('/')[-1])
+    with open(path, 'r') as open_read_file:
+        clean_csv_data = flatten_lines(open_read_file)
+    with open(new_path, 'w') as open_write_file:
+        open_write_file.write(clean_csv_data)
+    return new_path
+
+
 @memoize
 def get_csv_sheet(table_type):
     logger.info("in get_csv_sheet")
     path = get_csv_path(table_type)
     logger.info(str(path))
+
+    path = clean_csv(path)
 
     if sys.version_info[0] < 3:
         handle = open(path, 'rb')
