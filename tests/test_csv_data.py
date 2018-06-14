@@ -145,7 +145,7 @@ class TestCsvData(unittest.TestCase):
 
     def test_get_organisms(self):
         article_id = 3
-        expected = ['B. subtilis', 'D. melanogaster', 'E. coli', 'Mouse']
+        expected = ['<i>B. subtilis</i>', '<i>D. melanogaster</i>', '<i>E. coli</i>', 'Mouse']
         self.assertEqual(data.get_organisms(article_id), expected)
 
     def test_get_license(self):
@@ -335,7 +335,7 @@ class TestCsvData(unittest.TestCase):
         self.assertEqual(data.get_author_conflict(article_id, author_id), expected)
         article_id = '7'
         author_id = '1013'
-        expected = 'Senior Editor, eLife'
+        expected = 'Senior Editor, <i>eLife</i>'
         self.assertEqual(data.get_author_conflict(article_id, author_id), expected)
 
     def test_get_author_orcid(self):
