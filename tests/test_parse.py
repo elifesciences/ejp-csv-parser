@@ -263,10 +263,14 @@ class TestParse(unittest.TestCase):
 
 
     def test_set_organsims(self):
-        article = parse.instantiate_article('12')
-        return_value = parse.set_organsims(article, '12')
+        article = parse.instantiate_article('3')
+        return_value = parse.set_organsims(article, '3')
         self.assertTrue(return_value)
-        self.assertEqual(article.research_organisms, ['Rat'])
+        self.assertEqual(article.research_organisms,
+                         [u'<italic>B. subtilis</italic>',
+                          u'<italic>D. melanogaster</italic>',
+                          u'<italic>E. coli</italic>',
+                          u'Mouse'])
         # test not finding a value, currently still returns True
         article = Article()
         return_value = parse.set_organsims(article, '99999')
@@ -321,7 +325,7 @@ class TestParse(unittest.TestCase):
         self.assertEqual(contrib.orcid, None)
         self.assertEqual(contrib.suffix, None)
         self.assertEqual(contrib.collab, None)
-        self.assertEqual(contrib.conflict, ['Senior Editor, eLife'])
+        self.assertEqual(contrib.conflict, ['Senior Editor, <italic>eLife</italic>'])
         self.assertEqual(contrib.group_author_key, None)
         aff = article.contributors[2].affiliations[0]
         self.assertEqual(aff.phone, None)

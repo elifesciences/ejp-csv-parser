@@ -197,7 +197,7 @@ def set_organsims(article, article_id):
         research_organisms = data.get_organisms(article_id)
         for research_organism in research_organisms:
             if research_organism.strip() != "":
-                article.add_research_organism(research_organism)
+                article.add_research_organism(utils.convert_to_xml_string(research_organism))
         return True
     except:
         logger.error("could not set organisms")
@@ -267,7 +267,7 @@ def set_author_info(article, article_id):
 
             conflict = data.get_author_conflict(article_id, author_id)
             if conflict.strip() != "":
-                author.set_conflict(conflict)
+                author.set_conflict(utils.convert_to_xml_string(conflict))
 
             orcid = data.get_author_orcid(article_id, author_id)
             if orcid.strip() != "":
