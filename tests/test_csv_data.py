@@ -359,7 +359,7 @@ class TestCsvData(unittest.TestCase):
 
     def test_get_datasets(self):
         article_id = 7
-        expected = 'LTLTxmlGTGTLTLTdatasetsGTGTLTLTdatasets_indGTGT0LTLT/datasets_indGTGTLTLT/datasetsGTGTLTLTprev_published_datasetsGTGTLTLTdatasets_indGTGT0LTLT/datasets_indGTGTLTLT/prev_published_datasetsGTGTLTLT/xmlGTGT'
+        expected = 'LTLTxmlGTGTLTLTdata_availability_textboxGTGTOnly availability textLTLT/data_availability_textboxGTGTLTLTdatasetsGTGTLTLTdatasets_indGTGT0LTLT/datasets_indGTGTLTLT/datasetsGTGTLTLTprev_published_datasetsGTGTLTLTdatasets_indGTGT0LTLT/datasets_indGTGTLTLT/prev_published_datasetsGTGTLTLT/xmlGTGT'
         self.assertEqual(data.get_datasets(article_id), expected)
         # test missing row
         article_id = 99999
