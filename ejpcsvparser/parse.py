@@ -19,134 +19,128 @@ logger.setLevel(logging.INFO)
 
 def instantiate_article(article_id):
     logger.info("in instantiate_article for " + str(article_id))
-    try:
-        doi = data.get_doi(article_id)
+    doi = data.get_doi(article_id)
+    if doi is not None:
         # Fallback if doi string is blank, default to eLife concatenated
         if doi.strip() == "":
             doi = utils.get_elife_doi(article_id)
-        #title = get_title(article_id)
         article = ea.Article(doi, title=None)
         return article
-    except:
-        logger.error("could not create article class")
-        return None
 
 
 def set_title(article, article_id):
     logger.info("in set_title")
-    try:
-        title = data.get_title(article_id)
+    title = data.get_title(article_id)
+    if title:
         article.title = utils.convert_to_xml_string(title)
         return True
-    except:
+    else:
         logger.error("could not set title ")
         return False
 
 
 def set_abstract(article, article_id):
     logger.info("in set_abstract")
-    try:
-        abstract = utils.decode_cp1252(data.get_abstract(article_id))
+    raw_abstract = data.get_abstract(article_id)
+    if raw_abstract:
+        abstract = utils.decode_cp1252(raw_abstract)
         article.abstract = utils.convert_to_xml_string(abstract)
         article.manuscript = article_id
         return True
-    except:
+    else:
         logger.error("could not set abstract ")
         return False
 
 
 def set_article_type(article, article_id):
     logger.info("in set_article_type")
-    try:
-        article_type_id = data.get_article_type(article_id)
-
-        # Boilerplate article-type values based on id in CSV file
-        article_type_index = OrderedDict()
-
-        article_type_index['1'] = {
-            'article_type':    'research-article',
-            'display_channel': 'Research Article'}
-        article_type_index['10'] = {
-            'article_type':    'research-article',
-            'display_channel': 'Feature Article'}
-        article_type_index['14'] = {
-            'article_type':    'research-article',
-            'display_channel': 'Short Report'}
-        article_type_index['15'] = {
-            'article_type':    'research-article',
-            'display_channel': 'Research Advance'}
-        article_type_index['19'] = {
-            'article_type':    'research-article',
-            'display_channel': 'Tools and Resources'}
-
+    article_type_id = data.get_article_type(article_id)
+    article_type_index = utils.article_type_indexes()
+    if article_type_id in article_type_index:
         article_type = article_type_index[str(article_type_id)]
         article.article_type = article_type['article_type']
         article.display_channel = article_type['display_channel']
         return True
-    except:
-        logger.error("could not set article_type")
+    else:
         return False
+
 
 def set_license(article, article_id):
     logger.info("in set_license")
-    try:
-        license_id = data.get_license(article_id)
-        license_object = ea.License(license_id)
-
-        # Boilerplate license values based on the license_id
-        if int(license_id) == 1:
-            license_object.license_id = license_id
-            license_object.license_type = "open-access"
-            license_object.copyright = True
-            license_object.href = "http://creativecommons.org/licenses/by/4.0/"
-            license_object.name = "Creative Commons Attribution License"
-            license_object.paragraph1 = "This article is distributed under the terms of the "
-            license_object.paragraph2 = (
-                " permitting unrestricted use and redistribution provided that the " +
-                "original author and source are credited.")
-        elif int(license_id) == 2:
-            license_object.license_id = license_id
-            license_object.license_type = "open-access"
-            license_object.copyright = False
-            license_object.href = "http://creativecommons.org/publicdomain/zero/1.0/"
-            license_object.name = "Creative Commons CC0"
-            license_object.paragraph1 = (
-                "This is an open-access article, free of all copyright, and may be " +
-                "freely reproduced, distributed, transmitted, modified, built upon, or " +
-                "otherwise used by anyone for any lawful purpose. The work is made " +
-                "available under the ")
-            license_object.paragraph2 = " public domain dedication."
-
-        article.license = license_object
-        return True
-    except:
-        logger.error("could not set license")
+    # if no article return False
+    if not article:
         return False
+    license_id = data.get_license(article_id)
+    license_object = ea.License(license_id)
+    data_values = utils.license_data(license_id)
+    # if no data to populate the license return False
+    if not data_values:
+        return False
+    # set the object attributes from the data if present
+    for name in ['license_id', 'license_type', 'copyright', 'href',
+                 'name', 'paragraph1', 'paragraph2']:
+        eautils.set_attr_if_value(license_object, name, data_values.get(name))
+    article.license = license_object
+    return True
+
+
+def add_date_to_article(article, date_type, date_string):
+    "add a date to the article object"
+    if not article:
+        return False
+    date_struct = None
+    date_parts = []
+    if date_string:
+        date_parts = date_string.split()
+
+    if len(date_parts) > 0:
+        try:
+            date_struct = time.strptime(date_parts[0], "%Y-%m-%d")
+        except ValueError:
+            logger.info("unable to convert date {date_type} given {date_parts} for article {doi}".format(
+                date_type=date_type,
+                date_parts=date_parts,
+                doi=article.doi)
+            )
+            pass
+    else:
+        return False
+
+    if date_string and date_struct:
+        article_date = ea.ArticleDate(date_type, date_struct)
+        article.add_date(article_date)
+        logger.info("set date_type {date_type} from {date_string} as {article_date}".format(
+            date_type=date_type,
+            date_string=date_string,
+            article_date=str(article_date)))
+        return True
+    else:
+        return False
+
 
 def set_dates(article, article_id):
     logger.info("in set_dates")
-    try:
-        accepted_date = data.get_accepted_date(article_id)
-        t_accepted = time.strptime(accepted_date.split()[0], "%Y-%m-%d")
-        accepted = ea.ArticleDate("accepted", t_accepted)
-        article.add_date(accepted)
-        logger.info(str(accepted_date))
-
-        received_date = data.get_received_date(article_id)
-        if received_date.strip() == "":
-            # Use the alternate date column receipt_date if received_date is blank
-            received_date = data.get_receipt_date(article_id)
-        t_received = time.strptime(received_date.split()[0], "%Y-%m-%d")
-        received = ea.ArticleDate("received", t_received)
-        article.add_date(received)
-
-        # set the license date to be the same as the accepted date
-        date_license = ea.ArticleDate("license", t_accepted)
-        article.add_date(date_license)
-        return True
-    except:
-        logger.error("could not set dates")
+    if not article:
         return False
+
+    accepted_date = data.get_accepted_date(article_id)
+    date_status = add_date_to_article(article, "accepted", accepted_date)
+    if date_status is not True:
+        return False
+
+    received_date = data.get_received_date(article_id)
+    if received_date.strip() == "":
+        # Use the alternate date column receipt_date if received_date is blank
+        received_date = data.get_receipt_date(article_id)
+    date_status = add_date_to_article(article, "received", received_date)
+    if date_status is not True:
+        return False
+
+    # set the license date to be the same as the accepted date
+    if article.get_date('accepted'):
+        date_license = ea.ArticleDate("license", article.get_date('accepted').date)
+        article.add_date(date_license)
+    return True
 
 
 def set_ethics(article, article_id):
@@ -310,39 +304,39 @@ def set_author_info(article, article_id):
 
 def set_editor_info(article, article_id):
     logger.info("in set_editor_info")
-    try:
-        author_type = "editor"
 
-        first_name = utils.decode_cp1252(data.get_me_first_nm(article_id))
-        last_name = utils.decode_cp1252(data.get_me_last_nm(article_id))
-        middle_name = utils.decode_cp1252(data.get_me_middle_nm(article_id))
-        #initials = middle_name_initials(middle_name)
-        if middle_name.strip() != "":
-            # Middle name add to the first name / given name
-            first_name += " " + middle_name
-        # create an instance of the POSContributor class
-        editor = ea.Contributor(author_type, last_name, first_name)
-        logger.info("editor is: " + eautils.unicode_value(editor))
-        logger.info("getting ed id for article " + str(article_id))
-        logger.info("editor id is " + str(data.get_me_id(article_id)))
-        logger.info(str(type(data.get_me_id(article_id))))
-        editor.auth_id = data.get_me_id(article_id)
-        affiliation = ea.Affiliation()
-        department = data.get_me_department(article_id)
-        if department.strip() != "":
-            affiliation.department = department
-        affiliation.institution = data.get_me_institution(article_id)
-        affiliation.country = data.get_me_country(article_id)
+    author_type = "editor"
 
-        # editor.auth_id = `int(author_id)`we have a me_id, but I need to determine
-        # whether that Id is the same as the relevent author id
-        editor.set_affiliation(affiliation)
-        article.add_contributor(editor)
-        return True
-    except:
+    first_name = utils.decode_cp1252(data.get_me_first_nm(article_id))
+    last_name = utils.decode_cp1252(data.get_me_last_nm(article_id))
+    middle_name = utils.decode_cp1252(data.get_me_middle_nm(article_id))
+    # no first and last name then return False
+    if not(first_name and last_name):
         logger.error("could not set editor")
         return False
+    #initials = middle_name_initials(middle_name)
+    if middle_name.strip() != "":
+        # Middle name add to the first name / given name
+        first_name += " " + middle_name
+    # create an instance of the POSContributor class
+    editor = ea.Contributor(author_type, last_name, first_name)
+    logger.info("editor is: " + eautils.unicode_value(editor))
+    logger.info("getting ed id for article " + str(article_id))
+    logger.info("editor id is " + str(data.get_me_id(article_id)))
+    logger.info(str(type(data.get_me_id(article_id))))
+    editor.auth_id = data.get_me_id(article_id)
+    affiliation = ea.Affiliation()
+    department = data.get_me_department(article_id)
+    if department.strip() != "":
+        affiliation.department = department
+    affiliation.institution = data.get_me_institution(article_id)
+    affiliation.country = data.get_me_country(article_id)
 
+    # editor.auth_id = `int(author_id)`we have a me_id, but I need to determine
+    # whether that Id is the same as the relevent author id
+    editor.set_affiliation(affiliation)
+    article.add_contributor(editor)
+    return True
 
 def set_funding(article, article_id):
     """

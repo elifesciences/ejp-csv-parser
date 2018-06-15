@@ -154,6 +154,24 @@ class TestParse(unittest.TestCase):
         self.assertFalse(return_value)
 
 
+    def test_add_date_to_article_no_article(self):
+        "for coverage test supplying no article"
+        article = None
+        date_type = ''
+        date_string = ''
+        return_value = parse.add_date_to_article(article, date_type, date_string)
+        self.assertFalse(return_value)
+
+
+    def test_add_date_to_article_cannot_add_date(self):
+        "for coverage test supplying no article"
+        article = Article(doi='10.7554/eLife.00000')
+        date_type = 'accepted'
+        date_string = '2012-11'
+        return_value = parse.add_date_to_article(article, date_type, date_string)
+        self.assertFalse(return_value)
+
+
     def test_set_dates(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_dates(article, '12')
@@ -174,6 +192,17 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_dates(article, '12')
         self.assertTrue(return_value)
         self.assertEqual(article.get_date('received').date, generate_date("2012-05-28"))
+
+
+    @patch('ejpcsvparser.csv_data.get_receipt_date')
+    @patch('ejpcsvparser.csv_data.get_received_date')
+    def test_set_dates_no_received_or_receipt_date(self, fake_get_received_date,
+                                                   fake_get_receipt_date):
+        fake_get_received_date.return_value = ' '
+        fake_get_receipt_date.return_value = ' '
+        article = parse.instantiate_article('12')
+        return_value = parse.set_dates(article, '12')
+        self.assertFalse(return_value)
 
 
     def test_set_ethics(self):
