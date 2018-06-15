@@ -182,38 +182,30 @@ def set_datasets(article, article_id):
 
 def set_categories(article, article_id):
     logger.info("in set_categories")
-    try:
-        categories = data.get_subjects(article_id)
+    categories = data.get_subjects(article_id)
+    if categories:
         for category in categories:
             article.add_article_category(category)
-        return True
-    except:
-        logger.error("could not set categories")
-        return False
+    return True
+
 
 def set_organsims(article, article_id):
-    logger.info("in set_categories")
-    try:
-        research_organisms = data.get_organisms(article_id)
+    logger.info("in set_organsims")
+    research_organisms = data.get_organisms(article_id)
+    if research_organisms:
         for research_organism in research_organisms:
             if research_organism.strip() != "":
                 article.add_research_organism(utils.convert_to_xml_string(research_organism))
-        return True
-    except:
-        logger.error("could not set organisms")
-        return False
+    return True
 
 
 def set_keywords(article, article_id):
     logger.info("in set_keywords")
-    try:
-        keywords = data.get_keywords(article_id)
+    keywords = data.get_keywords(article_id)
+    if keywords:
         for keyword in keywords:
             article.add_author_keyword(keyword)
-        return True
-    except:
-        logger.error("could not set keywords")
-        return False
+    return True
 
 
 def set_author_info(article, article_id):

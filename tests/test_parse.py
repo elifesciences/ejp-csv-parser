@@ -284,11 +284,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_subjects')
-    def test_set_categories_bad_data(self, fake_get_subjects):
+    def test_set_categories_empty_data(self, fake_get_subjects):
         fake_get_subjects.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_categories(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_set_organsims(self):
@@ -307,11 +307,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_organisms')
-    def test_set_organisms_bad_data(self, fake_get_organisms):
+    def test_set_organisms_empty_data(self, fake_get_organisms):
         fake_get_organisms.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_organsims(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_set_keywords(self):
@@ -329,11 +329,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_keywords')
-    def test_set_keywords_bad_data(self, fake_get_keywords):
+    def test_set_keywords_empty_data(self, fake_get_keywords):
         fake_get_keywords.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_keywords(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_set_author_info(self):
