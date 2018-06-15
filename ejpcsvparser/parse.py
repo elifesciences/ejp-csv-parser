@@ -145,16 +145,18 @@ def set_dates(article, article_id):
 
 def set_ethics(article, article_id):
     logger.info("in set_ethics")
-    try:
-        ethic = data.get_ethics(article_id)
-        logger.info(ethic)
-        if ethic:
-            ethics = parse_ethics(ethic)
-            for e in ethics:
-                article.add_ethic(e)
+    ethics = None
+    ethic = data.get_ethics(article_id)
+    logger.info(ethic)
+    if ethic:
+        ethics = parse_ethics(ethic)
+    if ethics:
+        for ethics_value in ethics:
+            article.add_ethic(ethics_value)
+    # return value, if both are None or both are non-None, return True
+    if (ethic and ethics) or (not ethic and not ethics):
         return True
-    except:
-        logger.error("could not set ethics")
+    else:
         return False
 
 
@@ -399,6 +401,7 @@ def parse_ethics(ethic):
     """
 
     ethics = []
+    reparsed = None
 
     # Decode escaped angle brackets
     logger.info("ethic is " + str(ethic))
@@ -407,24 +410,28 @@ def parse_ethics(ethic):
     logger.info("ethic is " + str(ethic_xml))
 
     # Parse XML
-    reparsed = minidom.parseString(ethic_xml)
+    try:
+        reparsed = minidom.parseString(ethic_xml)
+    except:
+        logger.info("ethic reparsed is " + str(reparsed))
 
     # Extract comments
-    for ethic_type in 'animal_subjects', 'human_subjects':
-        ethic_node = reparsed.getElementsByTagName(ethic_type)[0]
-        for node in ethic_node.childNodes:
-            if node.nodeName == 'involved_comments':
-                text_node = node.childNodes[0]
-                ethic_text = text_node.nodeValue
-
-                # Add boilerplate
-                if ethic_type == 'animal_subjects':
-                    ethic_text = 'Animal experimentation: ' + ethic_text.strip()
-                elif ethic_type == 'human_subjects':
-                    ethic_text = 'Human subjects: ' + ethic_text.strip()
-
-                # Decode unicode characters
-                ethics.append(utils.entity_to_unicode(ethic_text))
+    if reparsed:
+        for ethic_type in 'animal_subjects', 'human_subjects':
+            ethic_node = reparsed.getElementsByTagName(ethic_type)[0]
+            for node in ethic_node.childNodes:
+                if node.nodeName == 'involved_comments':
+                    text_node = node.childNodes[0]
+                    ethic_text = text_node.nodeValue
+    
+                    # Add boilerplate
+                    if ethic_type == 'animal_subjects':
+                        ethic_text = 'Animal experimentation: ' + ethic_text.strip()
+                    elif ethic_type == 'human_subjects':
+                        ethic_text = 'Human subjects: ' + ethic_text.strip()
+    
+                    # Decode unicode characters
+                    ethics.append(utils.entity_to_unicode(ethic_text))
 
     return ethics
 
