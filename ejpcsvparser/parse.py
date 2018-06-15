@@ -224,7 +224,7 @@ def set_author_info(article, article_id):
         logger.error("could not find any author data")
         return False
 
-    try:
+    if author_ids:
         for author_id in author_ids:
 
             author_type = "author"
@@ -272,32 +272,29 @@ def set_author_info(article, article_id):
             # Add the author to the dictionary recording their position in the list
             authors_dict[int(author_position)] = author
 
-        # Add group author collab contributors, if present
-        group_authors = data.get_group_authors(article_id)
-        if group_authors:
-            # Parse the group authors string
-            group_author_dict = parse_group_authors(group_authors)
+    # Add group author collab contributors, if present
+    group_authors = data.get_group_authors(article_id)
+    if group_authors:
+        # Parse the group authors string
+        group_author_dict = parse_group_authors(group_authors)
 
-            if group_author_dict:
-                for author_position in sorted(group_author_dict.keys()):
-                    author_type = "author"
-                    last_name = None
-                    first_name = None
-                    collab = group_author_dict.get(author_position)
-                    author = ea.Contributor(author_type, last_name, first_name, collab)
+        if group_author_dict:
+            for author_position in sorted(group_author_dict.keys()):
+                author_type = "author"
+                last_name = None
+                first_name = None
+                collab = group_author_dict.get(author_position)
+                author = ea.Contributor(author_type, last_name, first_name, collab)
 
-                    # Add the author to the dictionary recording their position in the list
-                    authors_dict[int(author_position)] = author
+                # Add the author to the dictionary recording their position in the list
+                authors_dict[int(author_position)] = author
 
-        # Finally add authors to the article sorted by their position
-        for author_position in sorted(authors_dict.keys()):
-            #print article_id, author_position, author
-            article.add_contributor(authors_dict.get(author_position))
+    # Finally add authors to the article sorted by their position
+    for author_position in sorted(authors_dict.keys()):
+        #print article_id, author_position, author
+        article.add_contributor(authors_dict.get(author_position))
 
-        return True
-    except:
-        logger.error("could not set authors")
-        return False
+    return True
 
 
 def set_editor_info(article, article_id):

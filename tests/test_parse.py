@@ -384,11 +384,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_author_ids')
-    def test_set_author_info_bad_data(self, fake_get_author_ids):
+    def test_set_author_info_empty_data(self, fake_get_author_ids):
         fake_get_author_ids.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_author_info(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_set_editor_info(self):
