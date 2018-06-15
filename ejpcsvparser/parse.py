@@ -340,17 +340,20 @@ def set_funding(article, article_id):
     Finally add the funding objects to the article in the order of funding position
     """
     logger.info("in set_funding")
-    try:
-        # Set the funding note from the manuscript level
-        article.funding_note = data.get_funding_note(article_id)
+    if not article:
+        return False
 
-        # Query for all funding award data keys
-        funder_ids = data.get_funding_ids(article_id)
+    # Set the funding note from the manuscript level
+    article.funding_note = data.get_funding_note(article_id)
 
-        # Keep track of funding awards by position in a dict
-        funding_awards = OrderedDict()
+    # Query for all funding award data keys
+    funder_ids = data.get_funding_ids(article_id)
 
-        # First pass, build the funding awards
+    # Keep track of funding awards by position in a dict
+    funding_awards = OrderedDict()
+
+    # First pass, build the funding awards
+    if funder_ids:
         for (article_id, author_id, funder_position) in funder_ids:
             #print (article_id, author_id, funder_position)
             funder_identifier = data.get_funder_identifier(article_id, author_id, funder_position)
@@ -368,21 +371,18 @@ def set_funding(article, article_id):
                 if award_id and award_id.strip() != "":
                     funding_awards[funder_position].add_award_id(award_id)
 
-        # Second pass, add the primary award recipients in article author order
-        for position in sorted(funding_awards.keys()):
-            award = funding_awards.get(position)
-            for contrib in article.contributors:
-                for (article_id, author_id, funder_position) in funder_ids:
-                    if position == funder_position and contrib.auth_id == author_id:
-                        funding_awards[position].add_principal_award_recipient(contrib)
+    # Second pass, add the primary award recipients in article author order
+    for position in sorted(funding_awards.keys()):
+        award = funding_awards.get(position)
+        for contrib in article.contributors:
+            for (article_id, author_id, funder_position) in funder_ids:
+                if position == funder_position and contrib.auth_id == author_id:
+                    funding_awards[position].add_principal_award_recipient(contrib)
 
-        # Add funding awards to the article object, sorted by position
-        for position in sorted(funding_awards.keys()):
-            article.add_funding_award(funding_awards.get(position))
-        return True
-    except:
-        logger.error("could not set funding")
-        return False
+    # Add funding awards to the article object, sorted by position
+    for position in sorted(funding_awards.keys()):
+        article.add_funding_award(funding_awards.get(position))
+    return True
 
 
 def parse_ethics(ethic):

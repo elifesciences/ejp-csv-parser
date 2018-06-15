@@ -435,11 +435,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_funding_ids')
-    def test_set_funding_bad_data(self, fake_get_funding_ids):
+    def test_set_funding_empty_data(self, fake_get_funding_ids):
         fake_get_funding_ids.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_funding(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_parse_ethics(self):
