@@ -81,8 +81,8 @@ def get_cell_value(col_name, col_names, row):
     index of a specific col name is.
     """
     position = col_names.index(col_name)
-    cell_value = row[position]
-    return cell_value
+    if row and position and len(row) > position:
+        return row[position]
 
 
 def join_lines(line_one, line_two, line_number, data_start_row=DATA_START_ROW):
@@ -250,132 +250,114 @@ def get_article_attributes(article_id, attribute_type, attribute_label):
     return attributes
 
 
-# subjects table
+def article_all_values(article_id, file_name, column_name):
+    "get the article attributes and return all of them"
+    return get_article_attributes(article_id, file_name, column_name)
 
+
+def article_first_value(article_id, file_name, column_name):
+    "get the article attributes and return only the first value"
+    attributes = article_all_values(article_id, file_name, column_name)
+    if attributes:
+        return attributes[0]
+
+
+# subjects table
 def get_subjects(article_id):
-    attribute = get_article_attributes(article_id, "subjects",
-                                       COLUMN_HEADINGS["subject_areas"])
-    return attribute
+    return article_all_values(article_id, "subjects", COLUMN_HEADINGS["subject_areas"])
+
 
 # organisms table
-
 def get_organisms(article_id):
-    attribute = get_article_attributes(article_id, "organisms",
-                                       COLUMN_HEADINGS["organisms"])
-    return attribute
+    return article_all_values(article_id, "organisms", COLUMN_HEADINGS["organisms"])
+
 
 # license table
-
 def get_license(article_id):
-    attribute = get_article_attributes(article_id, "license",
-                                       COLUMN_HEADINGS["license_id"])[0]
-    return attribute
+    return article_first_value(article_id, "license", COLUMN_HEADINGS["license_id"])
+
 
 # keywords table
-
 def get_keywords(article_id):
-    attribute = get_article_attributes(article_id, "keywords",
-                                       COLUMN_HEADINGS["keywords"])
-    return attribute
+    return article_all_values(article_id, "keywords", COLUMN_HEADINGS["keywords"])
+
 
 # manuscript table
-
 @utils.entities
 def get_title(article_id):
-    attributes = get_article_attributes(article_id, "title",
-                                        COLUMN_HEADINGS["title"])
-    attribute = attributes[0]
-    return attribute
+    return article_first_value(article_id, "title", COLUMN_HEADINGS["title"])
+
 
 @utils.entities
 def get_abstract(article_id):
-    attributes = get_article_attributes(article_id, "abstract",
-                                        COLUMN_HEADINGS["abstract"])
-    attribute = attributes[0]
-    return attribute
+    return article_first_value(article_id, "abstract", COLUMN_HEADINGS["abstract"])
+
 
 def get_doi(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["doi"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["doi"])
+
 
 def get_article_type(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["article_type"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["article_type"])
+
 
 def get_accepted_date(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["accepted_date"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["accepted_date"])
+
 
 def get_received_date(article_id):
-    attribute = get_article_attributes(article_id, "received",
-                                       COLUMN_HEADINGS["received_date"])[0]
-    return attribute
+    return article_first_value(article_id, "received", COLUMN_HEADINGS["received_date"])
+
 
 def get_receipt_date(article_id):
-    attribute = get_article_attributes(article_id, "received",
-                                       COLUMN_HEADINGS["receipt_date"])[0]
-    return attribute
+    return article_first_value(article_id, "received", COLUMN_HEADINGS["receipt_date"])
+
 
 def get_me_id(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["editor_id"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_id"])
+
 
 @utils.entities
 def get_me_last_nm(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["editor_last_name"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_last_name"])
+
 
 @utils.entities
 def get_me_first_nm(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["editor_first_name"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_first_name"])
+
 
 @utils.entities
 def get_me_middle_nm(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["editor_middle_name"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_middle_name"])
+
 
 @utils.entities
 def get_me_institution(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["editor_institution"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_institution"])
+
 
 @utils.entities
 def get_me_department(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["editor_department"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_department"])
+
 
 @utils.entities
 def get_me_country(article_id):
-    attribute = get_article_attributes(article_id, "manuscript",
-                                       COLUMN_HEADINGS["editor_country"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_country"])
+
 
 def get_ethics(article_id):
     """
     needs a bit of refinement owing to serilaising of data by EJP
     """
-    try:
-        attribute = get_article_attributes(article_id, "ethics",
-                                           COLUMN_HEADINGS["ethics"])[0]
-    except IndexError:
-        attribute = None
-    return attribute
+    return article_first_value(article_id, "ethics", COLUMN_HEADINGS["ethics"])
+
 
 # authors table
 def get_author_ids(article_id):
-    author_ids = get_article_attributes(article_id, "authors",
-                                        COLUMN_HEADINGS["author_id"])
-    return author_ids
+    return article_all_values(article_id, "authors", COLUMN_HEADINGS["author_id"])
+
 
 def get_author_attribute(article_id, author_id, attribute_name):
     article_author_index = index_authors_on_author_id()
@@ -391,98 +373,75 @@ def get_author_attribute(article_id, author_id, attribute_name):
     return attribute
 
 def get_author_position(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_position"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_position"])
+
 
 def get_author_email(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["email"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["email"])
+
 
 def get_author_contrib_type(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_type"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_type"])
+
 
 def get_author_dual_corresponding(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["dual_corresponding"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["dual_corresponding"])
+
 
 @utils.entities
 def get_author_last_name(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_last_name"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_last_name"])
+
 
 @utils.entities
 def get_author_first_name(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_first_name"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_first_name"])
+
 
 @utils.entities
 def get_author_middle_name(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_middle_name"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_middle_name"])
+
 
 @utils.entities
 def get_author_institution(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_institution"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_institution"])
+
 
 @utils.entities
 def get_author_department(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_department"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_department"])
+
 
 @utils.entities
 def get_author_city(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_city"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_city"])
+
 
 @utils.entities
 def get_author_country(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_country"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_country"])
+
 
 def get_author_state(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_state"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_state"])
+
 
 def get_author_conflict(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["author_conflict"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_conflict"])
+
 
 def get_author_orcid(article_id, author_id):
-    attribute = get_author_attribute(article_id, author_id,
-                                     COLUMN_HEADINGS["orcid"])
-    return attribute
+    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["orcid"])
+
 
 def get_group_authors(article_id):
-    # Wrap in an exception because some empty rows throws IndexError
-    try:
-        attribute = get_article_attributes(article_id, "group_authors",
-                                           COLUMN_HEADINGS["group_author"])[0]
-    except IndexError:
-        attribute = None
-    return attribute
+    return article_first_value(article_id, "group_authors", COLUMN_HEADINGS["group_author"])
+
 
 def get_datasets(article_id):
-    try:
-        attribute = get_article_attributes(article_id, "datasets",
-                                           COLUMN_HEADINGS["datasets"])[0]
-    except IndexError:
-        attribute = None
-    return attribute
+    return article_first_value(article_id, "datasets", COLUMN_HEADINGS["datasets"])
+
 
 # funding
 @memoize
@@ -545,21 +504,20 @@ def get_funding_attribute(article_id, author_id, funder_position, attribute_name
     return attribute
 
 def get_funder(article_id, author_id, funder_position):
-    attribute = get_funding_attribute(
+    return get_funding_attribute(
         article_id, author_id, funder_position, COLUMN_HEADINGS["funder"])
-    return attribute
+
 
 def get_award_id(article_id, author_id, funder_position):
-    attribute = get_funding_attribute(
+    return get_funding_attribute(
         article_id, author_id, funder_position, COLUMN_HEADINGS["award_id"])
-    return attribute
+
 
 def get_funder_identifier(article_id, author_id, funder_position):
-    attribute = get_funding_attribute(
+    return get_funding_attribute(
         article_id, author_id, funder_position, COLUMN_HEADINGS["funder_identifier"])
-    return attribute
+
 
 def get_funding_note(article_id):
-    attribute = get_article_attributes(
-        article_id, "manuscript", COLUMN_HEADINGS["funding_note"])[0]
-    return attribute
+    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["funding_note"])
+
