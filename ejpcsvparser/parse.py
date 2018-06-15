@@ -146,35 +146,39 @@ def set_dates(article, article_id):
 def set_ethics(article, article_id):
     logger.info("in set_ethics")
     ethics = None
+    parse_status = None
     ethic = data.get_ethics(article_id)
     logger.info(ethic)
     if ethic:
-        ethics = parse_ethics(ethic)
+        parse_status, ethics = parse_ethics(ethic)
+    if ethic and parse_status is not True:
+        logger.error("could not set ethics due to parsing error")
+        return False
     if ethics:
         for ethics_value in ethics:
             article.add_ethic(ethics_value)
-    # return value, if both are None or both are non-None, return True
-    if (ethic and ethics) or (not ethic and not ethics):
-        return True
-    else:
-        return False
+    return True
 
 
 def set_datasets(article, article_id):
     logger.info("in set_datasets")
-    try:
-        datasets = data.get_datasets(article_id)
-        logger.info(datasets)
-        if datasets:
-            dataset_objects, data_availability = parse_datasets(datasets)
-            for dataset in dataset_objects:
-                article.add_dataset(dataset)
-            if data_availability:
-                article.data_availability = utils.convert_to_xml_string(data_availability)
-        return True
-    except:
-        logger.error("could not set datasets")
+    datasets = data.get_datasets(article_id)
+    dataset_objects = None
+    data_availability = None
+    parse_status = None
+    logger.info(datasets)
+    if datasets:
+        parse_status, dataset_objects, data_availability = parse_datasets(datasets)
+    if datasets and parse_status is not True:
+        logger.error("could not set datasets due to parsing error")
         return False
+    if dataset_objects:
+        for dataset in dataset_objects:
+            article.add_dataset(dataset)
+    if data_availability:
+        article.data_availability = utils.convert_to_xml_string(data_availability)
+    return True
+
 
 def set_categories(article, article_id):
     logger.info("in set_categories")
@@ -402,6 +406,7 @@ def parse_ethics(ethic):
 
     ethics = []
     reparsed = None
+    parse_status = None
 
     # Decode escaped angle brackets
     logger.info("ethic is " + str(ethic))
@@ -412,7 +417,9 @@ def parse_ethics(ethic):
     # Parse XML
     try:
         reparsed = minidom.parseString(ethic_xml)
+        parse_status = True
     except:
+        parse_status = False
         logger.info("ethic reparsed is " + str(reparsed))
 
     # Extract comments
@@ -433,7 +440,7 @@ def parse_ethics(ethic):
                     # Decode unicode characters
                     ethics.append(utils.entity_to_unicode(ethic_text))
 
-    return ethics
+    return parse_status, ethics
 
 def parse_datasets(datasets_content):
     """
@@ -441,6 +448,8 @@ def parse_datasets(datasets_content):
     """
     datasets = []
     data_availability = None
+    reparsed = None
+    parse_status = None
 
     # Decode escaped angle brackets
     logger.info("datasets is " + str(datasets_content))
@@ -450,50 +459,57 @@ def parse_datasets(datasets_content):
     logger.info("datasets is " + str(datasets_xml))
 
     # Parse XML
-    reparsed = minidom.parseString(datasets_xml)
+    try:
+        reparsed = minidom.parseString(datasets_xml)
+        parse_status = True
+    except:
+        logger.info("datasets reparsed is " + str(reparsed))
+        parse_status = False
+
 
     # Extract comments
-    for dataset_type in 'datasets', 'prev_published_datasets':
-        datasets_nodes = reparsed.getElementsByTagName(dataset_type)[0]
+    if reparsed:
+        for dataset_type in 'datasets', 'prev_published_datasets':
+            datasets_nodes = reparsed.getElementsByTagName(dataset_type)[0]
+    
+            for d_nodes in datasets_nodes.getElementsByTagName("dataset"):
+                dataset = ea.Dataset()
+    
+                dataset.dataset_type = dataset_type
+    
+                for node in d_nodes.childNodes:
+    
+                    if node.nodeName == 'authors_text_list' and len(node.childNodes) > 0:
+                        text_node = node.childNodes[0]
+                        for author_name in text_node.nodeValue.split(','):
+                            if author_name.strip() != '':
+                                dataset.add_author(author_name.lstrip())
+    
+                    if node.nodeName == 'title':
+                        text_node = node.childNodes[0]
+                        dataset.title = utils.entity_to_unicode(text_node.nodeValue)
+    
+                    if node.nodeName == 'id':
+                        text_node = node.childNodes[0]
+                        dataset.source_id = utils.entity_to_unicode(text_node.nodeValue)
+    
+                    if node.nodeName == 'license_info':
+                        text_node = node.childNodes[0]
+                        dataset.license_info = utils.entity_to_unicode(text_node.nodeValue)
+    
+                    if node.nodeName == 'year' and len(node.childNodes) > 0:
+                        text_node = node.childNodes[0]
+                        dataset.year = utils.entity_to_unicode(text_node.nodeValue)
+    
+                datasets.append(dataset)
+    
+        # Parse the data availability statement
+        if reparsed.getElementsByTagName('data_availability_textbox'):
+            data_availability_node = reparsed.getElementsByTagName('data_availability_textbox')
+            if data_availability_node[0].childNodes:
+                data_availability = utils.entity_to_unicode(data_availability_node[0].childNodes[0].nodeValue)
 
-        for d_nodes in datasets_nodes.getElementsByTagName("dataset"):
-            dataset = ea.Dataset()
-
-            dataset.dataset_type = dataset_type
-
-            for node in d_nodes.childNodes:
-
-                if node.nodeName == 'authors_text_list' and len(node.childNodes) > 0:
-                    text_node = node.childNodes[0]
-                    for author_name in text_node.nodeValue.split(','):
-                        if author_name.strip() != '':
-                            dataset.add_author(author_name.lstrip())
-
-                if node.nodeName == 'title':
-                    text_node = node.childNodes[0]
-                    dataset.title = utils.entity_to_unicode(text_node.nodeValue)
-
-                if node.nodeName == 'id':
-                    text_node = node.childNodes[0]
-                    dataset.source_id = utils.entity_to_unicode(text_node.nodeValue)
-
-                if node.nodeName == 'license_info':
-                    text_node = node.childNodes[0]
-                    dataset.license_info = utils.entity_to_unicode(text_node.nodeValue)
-
-                if node.nodeName == 'year' and len(node.childNodes) > 0:
-                    text_node = node.childNodes[0]
-                    dataset.year = utils.entity_to_unicode(text_node.nodeValue)
-
-            datasets.append(dataset)
-
-    # Parse the data availability statement
-    if reparsed.getElementsByTagName('data_availability_textbox'):
-        data_availability_node = reparsed.getElementsByTagName('data_availability_textbox')
-        if data_availability_node[0].childNodes:
-            data_availability = utils.entity_to_unicode(data_availability_node[0].childNodes[0].nodeValue)
-
-    return datasets, data_availability
+    return parse_status, datasets, data_availability
 
 def parse_group_authors(group_authors):
     """
