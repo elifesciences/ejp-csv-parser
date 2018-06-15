@@ -1,7 +1,7 @@
 import re
-import ejpcsvparser.settings as settings
 from elifetools import utils as etoolsutils
 from elifearticle import utils as eautils
+import ejpcsvparser.settings as settings
 
 
 def allowed_tags():
@@ -121,12 +121,12 @@ def decode_cp1252(string):
     """
     try:
         # See if it is not safe to encode to ascii first
-        junk = string.encode('ascii')
+        string.encode('ascii')
     except (UnicodeEncodeError, UnicodeDecodeError):
         # Wrap the decode in another exception to make sure this never fails
         try:
             string = string.decode('cp1252')
-        except:
+        except (UnicodeEncodeError, UnicodeDecodeError):
             pass
     return string
 
