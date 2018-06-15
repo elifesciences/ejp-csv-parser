@@ -419,13 +419,13 @@ def parse_ethics(ethic):
                 if node.nodeName == 'involved_comments':
                     text_node = node.childNodes[0]
                     ethic_text = text_node.nodeValue
-    
+
                     # Add boilerplate
                     if ethic_type == 'animal_subjects':
                         ethic_text = 'Animal experimentation: ' + ethic_text.strip()
                     elif ethic_type == 'human_subjects':
                         ethic_text = 'Human subjects: ' + ethic_text.strip()
-    
+
                     # Decode unicode characters
                     ethics.append(utils.entity_to_unicode(ethic_text))
 
@@ -460,38 +460,38 @@ def parse_datasets(datasets_content):
     if reparsed:
         for dataset_type in 'datasets', 'prev_published_datasets':
             datasets_nodes = reparsed.getElementsByTagName(dataset_type)[0]
-    
+
             for d_nodes in datasets_nodes.getElementsByTagName("dataset"):
                 dataset = ea.Dataset()
-    
+
                 dataset.dataset_type = dataset_type
-    
+
                 for node in d_nodes.childNodes:
-    
+
                     if node.nodeName == 'authors_text_list' and len(node.childNodes) > 0:
                         text_node = node.childNodes[0]
                         for author_name in text_node.nodeValue.split(','):
                             if author_name.strip() != '':
                                 dataset.add_author(author_name.lstrip())
-    
+
                     if node.nodeName == 'title':
                         text_node = node.childNodes[0]
                         dataset.title = utils.entity_to_unicode(text_node.nodeValue)
-    
+
                     if node.nodeName == 'id':
                         text_node = node.childNodes[0]
                         dataset.source_id = utils.entity_to_unicode(text_node.nodeValue)
-    
+
                     if node.nodeName == 'license_info':
                         text_node = node.childNodes[0]
                         dataset.license_info = utils.entity_to_unicode(text_node.nodeValue)
-    
+
                     if node.nodeName == 'year' and len(node.childNodes) > 0:
                         text_node = node.childNodes[0]
                         dataset.year = utils.entity_to_unicode(text_node.nodeValue)
-    
+
                 datasets.append(dataset)
-    
+
         # Parse the data availability statement
         if reparsed.getElementsByTagName('data_availability_textbox'):
             data_availability_node = reparsed.getElementsByTagName('data_availability_textbox')
