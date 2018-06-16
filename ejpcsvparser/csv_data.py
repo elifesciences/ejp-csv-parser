@@ -60,13 +60,14 @@ def get_csv_col_names(table_type):
     sheet = get_csv_sheet(table_type)
     LOGGER.info(sheet)
     LOGGER.info(str(ROWS_WITH_COLNAMES))
+    columns_row = []
     for index, row in enumerate(sheet):
         LOGGER.info("in enumerate")
         LOGGER.info(str(index) + " " + str(row))
         LOGGER.debug(str(index) + " " + str(ROWS_WITH_COLNAMES))
         if int(index) == int(ROWS_WITH_COLNAMES):
-            return row
-    return []
+            columns_row = row
+    return columns_row
 
 
 @memoize
