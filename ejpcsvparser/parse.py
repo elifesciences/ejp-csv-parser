@@ -9,16 +9,16 @@ from elifetools import utils as etoolsutils
 import ejpcsvparser.utils as utils
 import ejpcsvparser.csv_data as data
 
-logger = logging.getLogger('parse')
-hdlr = logging.FileHandler('parse.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.INFO)
+LOGGER = logging.getLogger('parse')
+HDLR = logging.FileHandler('parse.log')
+FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+HDLR.setFormatter(FORMATTER)
+LOGGER.addHandler(HDLR)
+LOGGER.setLevel(logging.INFO)
 
 
 def instantiate_article(article_id):
-    logger.info("in instantiate_article for " + str(article_id))
+    LOGGER.info("in instantiate_article for %s", article_id)
     doi = data.get_doi(article_id)
     if doi is not None:
         # Fallback if doi string is blank, default to eLife concatenated
@@ -26,34 +26,33 @@ def instantiate_article(article_id):
             doi = utils.get_elife_doi(article_id)
         article = ea.Article(doi, title=None)
         return article
+    return None
 
 
 def set_title(article, article_id):
-    logger.info("in set_title")
+    LOGGER.info("in set_title")
     title = data.get_title(article_id)
     if title:
         article.title = utils.convert_to_xml_string(title)
         return True
-    else:
-        logger.error("could not set title ")
-        return False
+    LOGGER.error("could not set title ")
+    return False
 
 
 def set_abstract(article, article_id):
-    logger.info("in set_abstract")
+    LOGGER.info("in set_abstract")
     raw_abstract = data.get_abstract(article_id)
     if raw_abstract:
         abstract = utils.decode_cp1252(raw_abstract)
         article.abstract = utils.convert_to_xml_string(abstract)
         article.manuscript = article_id
         return True
-    else:
-        logger.error("could not set abstract ")
-        return False
+    LOGGER.error("could not set abstract ")
+    return False
 
 
 def set_article_type(article, article_id):
-    logger.info("in set_article_type")
+    LOGGER.info("in set_article_type")
     article_type_id = data.get_article_type(article_id)
     article_type_index = utils.article_type_indexes()
     if article_type_id in article_type_index:
@@ -61,12 +60,11 @@ def set_article_type(article, article_id):
         article.article_type = article_type['article_type']
         article.display_channel = article_type['display_channel']
         return True
-    else:
-        return False
+    return False
 
 
 def set_license(article, article_id):
-    logger.info("in set_license")
+    LOGGER.info("in set_license")
     # if no article return False
     if not article:
         return False
@@ -93,33 +91,26 @@ def add_date_to_article(article, date_type, date_string):
     if date_string:
         date_parts = date_string.split()
 
-    if len(date_parts) > 0:
+    if date_parts:
         try:
             date_struct = time.strptime(date_parts[0], "%Y-%m-%d")
         except ValueError:
-            logger.info("unable to convert date {date_type} given {date_parts} for article {doi}".format(
-                date_type=date_type,
-                date_parts=date_parts,
-                doi=article.doi)
-            )
-            pass
+            LOGGER.info("unable to convert date %s given %s for article %s",
+                        date_type, date_parts, article.doi)
     else:
         return False
 
     if date_string and date_struct:
         article_date = ea.ArticleDate(date_type, date_struct)
         article.add_date(article_date)
-        logger.info("set date_type {date_type} from {date_string} as {article_date}".format(
-            date_type=date_type,
-            date_string=date_string,
-            article_date=str(article_date)))
+        LOGGER.info("set date_type %s from %s as %s",
+                    date_type, date_string, article_date)
         return True
-    else:
-        return False
+    return False
 
 
 def set_dates(article, article_id):
-    logger.info("in set_dates")
+    LOGGER.info("in set_dates")
     if not article:
         return False
 
@@ -144,15 +135,15 @@ def set_dates(article, article_id):
 
 
 def set_ethics(article, article_id):
-    logger.info("in set_ethics")
+    LOGGER.info("in set_ethics")
     ethics = None
     parse_status = None
     ethic = data.get_ethics(article_id)
-    logger.info(ethic)
+    LOGGER.info(ethic)
     if ethic:
         parse_status, ethics = parse_ethics(ethic)
     if ethic and parse_status is not True:
-        logger.error("could not set ethics due to parsing error")
+        LOGGER.error("could not set ethics due to parsing error")
         return False
     if ethics:
         for ethics_value in ethics:
@@ -161,16 +152,16 @@ def set_ethics(article, article_id):
 
 
 def set_datasets(article, article_id):
-    logger.info("in set_datasets")
+    LOGGER.info("in set_datasets")
     datasets = data.get_datasets(article_id)
     dataset_objects = None
     data_availability = None
     parse_status = None
-    logger.info(datasets)
+    LOGGER.info(datasets)
     if datasets:
         parse_status, dataset_objects, data_availability = parse_datasets(datasets)
     if datasets and parse_status is not True:
-        logger.error("could not set datasets due to parsing error")
+        LOGGER.error("could not set datasets due to parsing error")
         return False
     if dataset_objects:
         for dataset in dataset_objects:
@@ -181,7 +172,7 @@ def set_datasets(article, article_id):
 
 
 def set_categories(article, article_id):
-    logger.info("in set_categories")
+    LOGGER.info("in set_categories")
     categories = data.get_subjects(article_id)
     if categories:
         for category in categories:
@@ -190,7 +181,7 @@ def set_categories(article, article_id):
 
 
 def set_organsims(article, article_id):
-    logger.info("in set_organsims")
+    LOGGER.info("in set_organsims")
     research_organisms = data.get_organisms(article_id)
     if research_organisms:
         for research_organism in research_organisms:
@@ -200,7 +191,7 @@ def set_organsims(article, article_id):
 
 
 def set_keywords(article, article_id):
-    logger.info("in set_keywords")
+    LOGGER.info("in set_keywords")
     keywords = data.get_keywords(article_id)
     if keywords:
         for keyword in keywords:
@@ -215,13 +206,13 @@ def set_author_info(article, article_id):
     for both authors and group authors,
     Then add the contributors to the article object in order of their position
     """
-    logger.info("in set_author_info")
+    LOGGER.info("in set_author_info")
     authors_dict = {}
 
     # check there are any authors before continuing
     author_ids = data.get_author_ids(article_id)
     if not author_ids and not data.get_group_authors(article_id):
-        logger.error("could not find any author data")
+        LOGGER.error("could not find any author data")
         return False
 
     if author_ids:
@@ -232,7 +223,7 @@ def set_author_info(article, article_id):
             first_name = utils.decode_cp1252(data.get_author_first_name(article_id, author_id))
             last_name = utils.decode_cp1252(data.get_author_last_name(article_id, author_id))
             middle_name = utils.decode_cp1252(data.get_author_middle_name(article_id, author_id))
-            #initials = middle_name_initials(middle_name)
+            # initials = middle_name_initials(middle_name)
             if middle_name.strip() != "":
                 # Middle name add to the first name / given name
                 first_name += " " + middle_name
@@ -253,7 +244,6 @@ def set_author_info(article, article_id):
             dual_corresponding = data.get_author_dual_corresponding(article_id, author_id)
             if (contrib_type == "Corresponding Author" or
                     (dual_corresponding.strip() != '' and int(dual_corresponding.strip()) == 1)):
-                email = data.get_author_email(article_id, author_id)
                 affiliation.email = data.get_author_email(article_id, author_id)
                 author.corresp = True
 
@@ -291,14 +281,14 @@ def set_author_info(article, article_id):
 
     # Finally add authors to the article sorted by their position
     for author_position in sorted(authors_dict.keys()):
-        #print article_id, author_position, author
+        # print article_id, author_position, author
         article.add_contributor(authors_dict.get(author_position))
 
     return True
 
 
 def set_editor_info(article, article_id):
-    logger.info("in set_editor_info")
+    LOGGER.info("in set_editor_info")
 
     author_type = "editor"
 
@@ -307,18 +297,18 @@ def set_editor_info(article, article_id):
     middle_name = utils.decode_cp1252(data.get_me_middle_nm(article_id))
     # no first and last name then return False
     if not(first_name and last_name):
-        logger.error("could not set editor")
+        LOGGER.error("could not set editor")
         return False
-    #initials = middle_name_initials(middle_name)
+    # initials = middle_name_initials(middle_name)
     if middle_name.strip() != "":
         # Middle name add to the first name / given name
         first_name += " " + middle_name
     # create an instance of the POSContributor class
     editor = ea.Contributor(author_type, last_name, first_name)
-    logger.info("editor is: " + eautils.unicode_value(editor))
-    logger.info("getting ed id for article " + str(article_id))
-    logger.info("editor id is " + str(data.get_me_id(article_id)))
-    logger.info(str(type(data.get_me_id(article_id))))
+    LOGGER.info("editor is: %s", eautils.unicode_value(editor))
+    LOGGER.info("getting ed id for article %s", article_id)
+    LOGGER.info("editor id is %s", data.get_me_id(article_id))
+    LOGGER.info(str(type(data.get_me_id(article_id))))
     editor.auth_id = data.get_me_id(article_id)
     affiliation = ea.Affiliation()
     department = data.get_me_department(article_id)
@@ -333,13 +323,14 @@ def set_editor_info(article, article_id):
     article.add_contributor(editor)
     return True
 
+
 def set_funding(article, article_id):
     """
     Instantiate one eLifeFundingAward for each funding award
     Add principal award recipients in the order of author position for the article
     Finally add the funding objects to the article in the order of funding position
     """
-    logger.info("in set_funding")
+    LOGGER.info("in set_funding")
     if not article:
         return False
 
@@ -354,12 +345,13 @@ def set_funding(article, article_id):
 
     # First pass, build the funding awards
     if funder_ids:
-        for (article_id, author_id, funder_position) in funder_ids:
-            #print (article_id, author_id, funder_position)
-            funder_identifier = data.get_funder_identifier(article_id, author_id, funder_position)
+        for (funder_article_id, author_id, funder_position) in funder_ids:
+            # print (article_id, author_id, funder_position)
+            funder_identifier = data.get_funder_identifier(
+                funder_article_id, author_id, funder_position)
             funder = utils.decode_cp1252(utils.clean_funder(
-                data.get_funder(article_id, author_id, funder_position)))
-            award_id = data.get_award_id(article_id, author_id, funder_position)
+                data.get_funder(funder_article_id, author_id, funder_position)))
+            award_id = data.get_award_id(funder_article_id, author_id, funder_position)
 
             if funder_position not in funding_awards.keys():
                 # Initialise the object values
@@ -373,9 +365,8 @@ def set_funding(article, article_id):
 
     # Second pass, add the primary award recipients in article author order
     for position in sorted(funding_awards.keys()):
-        award = funding_awards.get(position)
         for contrib in article.contributors:
-            for (article_id, author_id, funder_position) in funder_ids:
+            for (funder_article_id, author_id, funder_position) in funder_ids:
                 if position == funder_position and contrib.auth_id == author_id:
                     funding_awards[position].add_principal_award_recipient(contrib)
 
@@ -398,10 +389,10 @@ def parse_ethics(ethic):
     parse_status = None
 
     # Decode escaped angle brackets
-    logger.info("ethic is " + str(ethic))
+    LOGGER.info("ethic is %s", ethic)
     ethic_xml = utils.unserialise_angle_brackets(ethic)
     ethic_xml = etoolsutils.escape_ampersand(ethic_xml)
-    logger.info("ethic is " + str(ethic_xml))
+    LOGGER.info("ethic is %s", ethic_xml)
 
     # Parse XML
     try:
@@ -409,7 +400,7 @@ def parse_ethics(ethic):
         parse_status = True
     except:
         parse_status = False
-        logger.info("ethic reparsed is " + str(reparsed))
+        LOGGER.info("ethic reparsed is %s", reparsed)
 
     # Extract comments
     if reparsed:
@@ -431,6 +422,7 @@ def parse_ethics(ethic):
 
     return parse_status, ethics
 
+
 def parse_datasets(datasets_content):
     """
     Datasets content is XML with escaped angle brackets
@@ -441,20 +433,19 @@ def parse_datasets(datasets_content):
     parse_status = None
 
     # Decode escaped angle brackets
-    logger.info("datasets is " + str(datasets_content))
+    LOGGER.info("datasets is %s", datasets_content)
     datasets_xml = utils.escape_angle_brackets(datasets_content)
     datasets_xml = utils.unserialise_angle_brackets(datasets_xml)
     datasets_xml = etoolsutils.escape_ampersand(datasets_xml)
-    logger.info("datasets is " + str(datasets_xml))
+    LOGGER.info("datasets is %s", datasets_xml)
 
     # Parse XML
     try:
         reparsed = minidom.parseString(datasets_xml)
         parse_status = True
     except:
-        logger.info("datasets reparsed is " + str(reparsed))
+        LOGGER.info("datasets reparsed is %s", reparsed)
         parse_status = False
-
 
     # Extract comments
     if reparsed:
@@ -468,7 +459,7 @@ def parse_datasets(datasets_content):
 
                 for node in d_nodes.childNodes:
 
-                    if node.nodeName == 'authors_text_list' and len(node.childNodes) > 0:
+                    if node.nodeName == 'authors_text_list' and node.childNodes:
                         text_node = node.childNodes[0]
                         for author_name in text_node.nodeValue.split(','):
                             if author_name.strip() != '':
@@ -486,7 +477,7 @@ def parse_datasets(datasets_content):
                         text_node = node.childNodes[0]
                         dataset.license_info = utils.entity_to_unicode(text_node.nodeValue)
 
-                    if node.nodeName == 'year' and len(node.childNodes) > 0:
+                    if node.nodeName == 'year' and node.childNodes:
                         text_node = node.childNodes[0]
                         dataset.year = utils.entity_to_unicode(text_node.nodeValue)
 
@@ -496,9 +487,11 @@ def parse_datasets(datasets_content):
         if reparsed.getElementsByTagName('data_availability_textbox'):
             data_availability_node = reparsed.getElementsByTagName('data_availability_textbox')
             if data_availability_node[0].childNodes:
-                data_availability = utils.entity_to_unicode(data_availability_node[0].childNodes[0].nodeValue)
+                data_availability = utils.entity_to_unicode(
+                    data_availability_node[0].childNodes[0].nodeValue)
 
     return parse_status, datasets, data_availability
+
 
 def parse_group_authors(group_authors):
     """
@@ -539,7 +532,6 @@ def parse_group_authors(group_authors):
     return group_author_dict
 
 
-
 def build_article(article_id):
     """
     Given an article_id, instantiate and populate the article objects
@@ -575,5 +567,5 @@ def build_article(article_id):
 
     if error_count == 0:
         return article, error_count, error_messages
-    else:
-        return None, error_count, error_messages
+
+    return None, error_count, error_messages
