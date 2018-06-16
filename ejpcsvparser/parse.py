@@ -3,6 +3,7 @@ import logging
 import time
 from collections import OrderedDict
 from xml.dom import minidom
+from xml.parsers.expat import ExpatError
 from elifearticle import article as ea
 from elifearticle import utils as eautils
 from elifetools import utils as etoolsutils
@@ -398,7 +399,7 @@ def parse_ethics(ethic):
     try:
         reparsed = minidom.parseString(ethic_xml)
         parse_status = True
-    except:
+    except ExpatError:
         parse_status = False
         LOGGER.info("ethic reparsed is %s", reparsed)
 
@@ -443,7 +444,7 @@ def parse_datasets(datasets_content):
     try:
         reparsed = minidom.parseString(datasets_xml)
         parse_status = True
-    except:
+    except ExpatError:
         LOGGER.info("datasets reparsed is %s", reparsed)
         parse_status = False
 
