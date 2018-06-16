@@ -200,6 +200,41 @@ def set_keywords(article, article_id):
     return True
 
 
+def build_author(article_id, author_id, author_type):
+    "build an author object with the basic name data"
+    first_name = utils.decode_cp1252(data.get_author_first_name(article_id, author_id))
+    last_name = utils.decode_cp1252(data.get_author_last_name(article_id, author_id))
+    middle_name = utils.decode_cp1252(data.get_author_middle_name(article_id, author_id))
+    # initials = middle_name_initials(middle_name)
+    if middle_name.strip() != "":
+        # Middle name add to the first name / given name
+        first_name += " " + middle_name
+    author = ea.Contributor(author_type, last_name, first_name)
+    return author
+
+
+def author_affiliation(article_id, author_id):
+    "create and set author affiliation details"
+    affiliation = ea.Affiliation()
+
+    department = utils.decode_cp1252(data.get_author_department(article_id, author_id))
+    if department.strip() != "":
+        affiliation.department = department
+    affiliation.institution = utils.decode_cp1252(
+        data.get_author_institution(article_id, author_id))
+    city = utils.decode_cp1252(data.get_author_city(article_id, author_id))
+    if city.strip() != "":
+        affiliation.city = city
+    affiliation.country = data.get_author_country(article_id, author_id)
+
+    contrib_type = data.get_author_contrib_type(article_id, author_id)
+    dual_corresponding = data.get_author_dual_corresponding(article_id, author_id)
+    if (contrib_type == "Corresponding Author" or
+            (dual_corresponding.strip() != '' and int(dual_corresponding.strip()) == 1)):
+        affiliation.email = data.get_author_email(article_id, author_id)
+    return affiliation
+
+
 def set_author_info(article, article_id):
     """
     author information
@@ -220,32 +255,12 @@ def set_author_info(article, article_id):
         for author_id in author_ids:
 
             author_type = "author"
+            author = build_author(article_id, author_id, author_type)
 
-            first_name = utils.decode_cp1252(data.get_author_first_name(article_id, author_id))
-            last_name = utils.decode_cp1252(data.get_author_last_name(article_id, author_id))
-            middle_name = utils.decode_cp1252(data.get_author_middle_name(article_id, author_id))
-            # initials = middle_name_initials(middle_name)
-            if middle_name.strip() != "":
-                # Middle name add to the first name / given name
-                first_name += " " + middle_name
-            author = ea.Contributor(author_type, last_name, first_name)
-            affiliation = ea.Affiliation()
-
-            department = utils.decode_cp1252(data.get_author_department(article_id, author_id))
-            if department.strip() != "":
-                affiliation.department = department
-            affiliation.institution = utils.decode_cp1252(
-                data.get_author_institution(article_id, author_id))
-            city = utils.decode_cp1252(data.get_author_city(article_id, author_id))
-            if city.strip() != "":
-                affiliation.city = city
-            affiliation.country = data.get_author_country(article_id, author_id)
-
-            contrib_type = data.get_author_contrib_type(article_id, author_id)
-            dual_corresponding = data.get_author_dual_corresponding(article_id, author_id)
-            if (contrib_type == "Corresponding Author" or
-                    (dual_corresponding.strip() != '' and int(dual_corresponding.strip()) == 1)):
-                affiliation.email = data.get_author_email(article_id, author_id)
+            affiliation = author_affiliation(article_id, author_id)
+            author.set_affiliation(affiliation)
+            # set corresponding if the affiliation has an email
+            if affiliation.email:
                 author.corresp = True
 
             conflict = data.get_author_conflict(article_id, author_id)
@@ -271,11 +286,8 @@ def set_author_info(article, article_id):
 
         if group_author_dict:
             for author_position in sorted(group_author_dict.keys()):
-                author_type = "author"
-                last_name = None
-                first_name = None
                 collab = group_author_dict.get(author_position)
-                author = ea.Contributor(author_type, last_name, first_name, collab)
+                author = ea.Contributor("author", None, None, collab)
 
                 # Add the author to the dictionary recording their position in the list
                 authors_dict[int(author_position)] = author
