@@ -1,6 +1,7 @@
 import logging
 import csv
-import io, sys
+import sys
+import io
 import os
 from collections import defaultdict, OrderedDict
 import ejpcsvparser.utils as utils
@@ -15,27 +16,29 @@ CSV_FILES = settings.CSV_FILES
 COLUMN_HEADINGS = settings.CSV_COLUMN_HEADINGS
 OVERFLOW_CSV_FILES = settings.OVERFLOW_CSV_FILES
 
-logger = logging.getLogger('csv_data')
-hdlr = logging.FileHandler('csv_data.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.INFO)
+LOGGER = logging.getLogger('csv_data')
+HDLR = logging.FileHandler('csv_data.log')
+FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+HDLR.setFormatter(FORMATTER)
+LOGGER.addHandler(HDLR)
+LOGGER.setLevel(logging.INFO)
 
 
-def memoize(f):
+def memoize(value):
     "Memoization decorator for functions taking one or more arguments."
     class Memodict(dict):
         "Memoization dict"
-        def __init__(self, f):
+        def __init__(self, value):
             dict.__init__(self)
-            self.f = f
+            self.value = value
+
         def __call__(self, *args):
             return self[args]
+
         def __missing__(self, key):
-            ret = self[key] = self.f(*key)
+            ret = self[key] = self.value(*key)
             return ret
-    return Memodict(f)
+    return Memodict(value)
 
 
 def get_csv_path(path_type):
@@ -52,17 +55,19 @@ def get_csv_path(path_type):
 
 @memoize
 def get_csv_col_names(table_type):
-    logger.info("in get_csv_col_names")
-    logger.info(table_type)
+    LOGGER.info("in get_csv_col_names")
+    LOGGER.info(table_type)
     sheet = get_csv_sheet(table_type)
-    logger.info(sheet)
-    logger.info(str(ROWS_WITH_COLNAMES))
+    LOGGER.info(sheet)
+    LOGGER.info(str(ROWS_WITH_COLNAMES))
     for index, row in enumerate(sheet):
-        logger.info("in enumerate")
-        logger.info(str(index) + " " + str(row))
-        logger.debug(str(index) + " " + str(ROWS_WITH_COLNAMES))
+        LOGGER.info("in enumerate")
+        LOGGER.info(str(index) + " " + str(row))
+        LOGGER.debug(str(index) + " " + str(ROWS_WITH_COLNAMES))
         if int(index) == int(ROWS_WITH_COLNAMES):
             return row
+    return []
+
 
 @memoize
 def get_csv_data_rows(table_type):
@@ -83,6 +88,7 @@ def get_cell_value(col_name, col_names, row):
     position = col_names.index(col_name)
     if row and position and len(row) > position:
         return row[position]
+    return None
 
 
 def join_lines(line_one, line_two, line_number, data_start_row=DATA_START_ROW):
@@ -126,6 +132,7 @@ def flatten_lines(iterable, data_start_row=DATA_START_ROW):
     clean_csv_data += prev_line
     return clean_csv_data
 
+
 @memoize
 def clean_csv(path):
     "fix CSV file oddities making it difficult to parse"
@@ -140,16 +147,16 @@ def clean_csv(path):
 
 @memoize
 def get_csv_sheet(table_type):
-    logger.info("in get_csv_sheet")
+    LOGGER.info("in get_csv_sheet")
     path = get_csv_path(table_type)
-    logger.info(str(path))
+    LOGGER.info(str(path))
 
     path = clean_csv(path)
 
     if sys.version_info[0] < 3:
         handle = open(path, 'rb')
     else:
-        #https://docs.python.org/3/library/functions.html#open
+        # https://docs.python.org/3/library/functions.html#open
         handle = io.open(path, 'r', newline='', encoding='utf-8', errors='surrogateescape')
 
     with handle as csvfile:
@@ -186,14 +193,14 @@ def index_table_on_article_id(table_type):
     the name of the manuscript number column is hard wired in this function.
     """
 
-    logger.info("in index_table_on_article_id")
+    LOGGER.info("in index_table_on_article_id")
 
     # get the data and the row of colnames
     data_rows = get_csv_data_rows(table_type)
     col_names = get_csv_col_names(table_type)
 
-    # logger.info("data_rows: " + str(data_rows))
-    logger.info("col_names: " + str(col_names))
+    # LOGGER.info("data_rows: " + str(data_rows))
+    LOGGER.info("col_names: %s", col_names)
 
     article_index = defaultdict(list)
     for data_row in data_rows:
@@ -208,6 +215,7 @@ def index_table_on_article_id(table_type):
 def index_authors_on_article_id():
     article_index = index_table_on_article_id("authors")
     return article_index
+
 
 @memoize
 def index_authors_on_author_id():
@@ -234,15 +242,15 @@ def index_authors_on_author_id():
 
 @memoize
 def get_article_attributes(article_id, attribute_type, attribute_label):
-    logger.info("in get_article_attributes")
-    logger.info("article_id: " + str(article_id) + " attribute_type: " +
-                attribute_type + " attribute_label:" +  attribute_label)
+    LOGGER.info("in get_article_attributes")
+    LOGGER.info("article_id: %s attribute_type: %s attribute_label: %s",
+                article_id, attribute_type, attribute_label)
     attributes = []
-    logger.info("about to generate attribute index")
+    LOGGER.info("about to generate attribute index")
     attribute_index = index_table_on_article_id(attribute_type)
-    logger.info("generated attribute index")
-    # logger.info(str(attribute_index))
-    logger.info("about to get col_names for colname " + str(attribute_type))
+    LOGGER.info("generated attribute index")
+    # LOGGER.info(str(attribute_index))
+    LOGGER.info("about to get col_names for colname %s", attribute_type)
     col_names = get_csv_col_names(attribute_type)
     attribute_rows = attribute_index[str(article_id)]
     for attribute_row in attribute_rows:
@@ -260,6 +268,7 @@ def article_first_value(article_id, file_name, column_name):
     attributes = article_all_values(article_id, file_name, column_name)
     if attributes:
         return attributes[0]
+    return None
 
 
 # subjects table
@@ -372,6 +381,7 @@ def get_author_attribute(article_id, author_id, attribute_name):
     attribute = get_cell_value(attribute_name, col_names, data_row)
     return attribute
 
+
 def get_author_position(article_id, author_id):
     return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_position"])
 
@@ -453,14 +463,14 @@ def index_funding_table():
     """
     table_type = "funding"
 
-    logger.info("in index_funding_table")
+    LOGGER.info("in index_funding_table")
 
     # get the data and the row of colnames
     data_rows = get_csv_data_rows(table_type)
     col_names = get_csv_col_names(table_type)
 
-    # logger.info("data_rows: " + str(data_rows))
-    logger.info("col_names: " + str(col_names))
+    # LOGGER.info("data_rows: " + str(data_rows))
+    LOGGER.info("col_names: %s", col_names)
 
     article_index = OrderedDict()
     for data_row in data_rows:
@@ -476,8 +486,8 @@ def index_funding_table():
 
         article_index[article_id][author_id][funder_position] = data_row
 
-    #print article_index
     return article_index
+
 
 def get_funding_ids(article_id):
     """
@@ -494,6 +504,7 @@ def get_funding_ids(article_id):
 
     return funding_ids
 
+
 def get_funding_attribute(article_id, author_id, funder_position, attribute_name):
     funding_article_index = index_funding_table()
 
@@ -502,6 +513,7 @@ def get_funding_attribute(article_id, author_id, funder_position, attribute_name
     col_names = get_csv_col_names("funding")
     attribute = get_cell_value(attribute_name, col_names, data_row)
     return attribute
+
 
 def get_funder(article_id, author_id, funder_position):
     return get_funding_attribute(
@@ -520,4 +532,3 @@ def get_funder_identifier(article_id, author_id, funder_position):
 
 def get_funding_note(article_id):
     return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["funding_note"])
-
