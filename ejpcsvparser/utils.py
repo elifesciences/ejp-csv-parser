@@ -1,7 +1,8 @@
 import re
-import ejpcsvparser.settings as settings
+from collections import OrderedDict
 from elifetools import utils as etoolsutils
 from elifearticle import utils as eautils
+import ejpcsvparser.settings as settings
 
 
 def allowed_tags():
@@ -21,6 +22,57 @@ def allowed_tags():
     )
 
 
+def article_type_indexes():
+    "boilerplate article-type values based on id in CSV file"
+    article_type_index = OrderedDict()
+    article_type_index['1'] = {
+        'article_type':    'research-article',
+        'display_channel': 'Research Article'}
+    article_type_index['10'] = {
+        'article_type':    'research-article',
+        'display_channel': 'Feature Article'}
+    article_type_index['14'] = {
+        'article_type':    'research-article',
+        'display_channel': 'Short Report'}
+    article_type_index['15'] = {
+        'article_type':    'research-article',
+        'display_channel': 'Research Advance'}
+    article_type_index['19'] = {
+        'article_type':    'research-article',
+        'display_channel': 'Tools and Resources'}
+    return article_type_index
+
+
+def license_data(license_id):
+    "boilerplate data to populate a license object keyed on the license_id"
+    license_data = OrderedDict()
+    if not license_id:
+        return license_data
+    if int(license_id) == 1:
+        license_data['license_id'] = license_id
+        license_data['license_type'] = "open-access"
+        license_data['copyright'] = True
+        license_data['href'] = "http://creativecommons.org/licenses/by/4.0/"
+        license_data['name'] = "Creative Commons Attribution License"
+        license_data['paragraph1'] = "This article is distributed under the terms of the "
+        license_data['paragraph2'] = (
+            " permitting unrestricted use and redistribution provided that the " +
+            "original author and source are credited.")
+    elif int(license_id) == 2:
+        license_data['license_id'] = license_id
+        license_data['license_type'] = "open-access"
+        license_data['copyright'] = False
+        license_data['href'] = "http://creativecommons.org/publicdomain/zero/1.0/"
+        license_data['name'] = "Creative Commons CC0"
+        license_data['paragraph1'] = (
+            "This is an open-access article, free of all copyright, and may be " +
+            "freely reproduced, distributed, transmitted, modified, built upon, or " +
+            "otherwise used by anyone for any lawful purpose. The work is made " +
+            "available under the ")
+        license_data['paragraph2'] = " public domain dedication."
+    return license_data
+
+
 def repl(match):
     # Convert hex to int to unicode character
     chr_code = int(match.group(1), 16)
@@ -32,6 +84,8 @@ def entity_to_unicode(string):
     Quick convert unicode HTML entities to unicode characters
     using a regular expression replacement
     """
+    if not string:
+        return string
     # Selected character replacements that have been seen
     replacements = []
     replacements.append((r"&alpha;", u"\u03b1"))
@@ -119,14 +173,16 @@ def decode_cp1252(string):
     to the final XML output.
     This function helps do that in selected places, like on author surnames
     """
+    if not string:
+        return string
     try:
         # See if it is not safe to encode to ascii first
-        junk = string.encode('ascii')
+        string.encode('ascii')
     except (UnicodeEncodeError, UnicodeDecodeError):
         # Wrap the decode in another exception to make sure this never fails
         try:
             string = string.decode('cp1252')
-        except:
+        except (UnicodeEncodeError, UnicodeDecodeError):
             pass
     return string
 

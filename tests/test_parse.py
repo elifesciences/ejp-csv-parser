@@ -154,6 +154,24 @@ class TestParse(unittest.TestCase):
         self.assertFalse(return_value)
 
 
+    def test_add_date_to_article_no_article(self):
+        "for coverage test supplying no article"
+        article = None
+        date_type = ''
+        date_string = ''
+        return_value = parse.add_date_to_article(article, date_type, date_string)
+        self.assertFalse(return_value)
+
+
+    def test_add_date_to_article_cannot_add_date(self):
+        "for coverage test supplying no article"
+        article = Article(doi='10.7554/eLife.00000')
+        date_type = 'accepted'
+        date_string = '2012-11'
+        return_value = parse.add_date_to_article(article, date_type, date_string)
+        self.assertFalse(return_value)
+
+
     def test_set_dates(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_dates(article, '12')
@@ -174,6 +192,17 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_dates(article, '12')
         self.assertTrue(return_value)
         self.assertEqual(article.get_date('received').date, generate_date("2012-05-28"))
+
+
+    @patch('ejpcsvparser.csv_data.get_receipt_date')
+    @patch('ejpcsvparser.csv_data.get_received_date')
+    def test_set_dates_no_received_or_receipt_date(self, fake_get_received_date,
+                                                   fake_get_receipt_date):
+        fake_get_received_date.return_value = ' '
+        fake_get_receipt_date.return_value = ' '
+        article = parse.instantiate_article('12')
+        return_value = parse.set_dates(article, '12')
+        self.assertFalse(return_value)
 
 
     def test_set_ethics(self):
@@ -255,11 +284,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_subjects')
-    def test_set_categories_bad_data(self, fake_get_subjects):
+    def test_set_categories_empty_data(self, fake_get_subjects):
         fake_get_subjects.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_categories(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_set_organsims(self):
@@ -278,11 +307,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_organisms')
-    def test_set_organisms_bad_data(self, fake_get_organisms):
+    def test_set_organisms_empty_data(self, fake_get_organisms):
         fake_get_organisms.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_organsims(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_set_keywords(self):
@@ -300,11 +329,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_keywords')
-    def test_set_keywords_bad_data(self, fake_get_keywords):
+    def test_set_keywords_empty_data(self, fake_get_keywords):
         fake_get_keywords.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_keywords(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_set_author_info(self):
@@ -355,11 +384,11 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_author_ids')
-    def test_set_author_info_bad_data(self, fake_get_author_ids):
+    def test_set_author_info_empty_data(self, fake_get_author_ids):
         fake_get_author_ids.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_author_info(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_set_editor_info(self):
@@ -406,17 +435,17 @@ class TestParse(unittest.TestCase):
 
 
     @patch('ejpcsvparser.csv_data.get_funding_ids')
-    def test_set_funding_bad_data(self, fake_get_funding_ids):
+    def test_set_funding_empty_data(self, fake_get_funding_ids):
         fake_get_funding_ids.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_funding(article, '12')
-        self.assertFalse(return_value)
+        self.assertTrue(return_value)
 
 
     def test_parse_ethics(self):
         "test examples of parsing ethics data"
         ethic = "LTLTxmlGTGTLTLTanimal_subjectsGTGTLTLTinvolved_indGTGT0LTLT/involved_indGTGTLTLT/animal_subjectsGTGTLTLThuman_subjectsGTGTLTLTclinical_trial_indGTGT0LTLT/clinical_trial_indGTGTLTLTinvolved_commentsGTGTWe obtained informed consent and consent to publish from participants enrolled in this study.Ethical approval references:Genome Analysis of myeloid and lymphoid malignancies (10/H0306/40)Genomic Analysis of Mesothelioma (11/EE/0444)Myeloid and lymphoid cancer genome analysis (07/S1402/90)The Treatment of Down Syndrome Children with Acute Myeloid Leukemia and Myelodysplastic Syndrome(AAML0431)CLL (chronic lymphocytic leukaemia) genome analysis (07/Q0104/3)CGP-Exome sequencing of Down syndrome associated acute myeloid leukemia samples (IRB 13-010133)Cancer Genome Project - Global approaches to characterising the molecular basis of paediatric ependymoma (05/MRE04/70)PREDICT-Cohort (09/H0801/96)ICGC Prostate (Evaluation of biomarkers in urological diseases) (LREC 03/018)ICGC Prostate (779) (Prostate Complex CRUK Sample Cohort) (MREC/01/4/061)ICGC Prostate (Tissue collection at radical prostatectomy) (CRE-2011.373)Somatic molecular genetics of human cancers, melanoma and myeloma (Dana Farber Cancer Institute)(08/H0308/303)Breast Cancer Genome Analysis for the International Cancer Genome Consortium Working Group (09/H0306/36)Genome analysis of tumours of the bone (09/H0308/165)LTLT/involved_commentsGTGTLTLTinvolved_indGTGT1LTLT/involved_indGTGTLTLT/human_subjectsGTGTLTLT/xmlGTGT"
-        ethics = parse.parse_ethics(ethic)
+        parse_status, ethics = parse.parse_ethics(ethic)
         self.assertEqual(ethics[0], 'Human subjects: We obtained informed consent and consent to publish from participants enrolled in this study.Ethical approval references:Genome Analysis of myeloid and lymphoid malignancies (10/H0306/40)Genomic Analysis of Mesothelioma (11/EE/0444)Myeloid and lymphoid cancer genome analysis (07/S1402/90)The Treatment of Down Syndrome Children with Acute Myeloid Leukemia and Myelodysplastic Syndrome(AAML0431)CLL (chronic lymphocytic leukaemia) genome analysis (07/Q0104/3)CGP-Exome sequencing of Down syndrome associated acute myeloid leukemia samples (IRB 13-010133)Cancer Genome Project - Global approaches to characterising the molecular basis of paediatric ependymoma (05/MRE04/70)PREDICT-Cohort (09/H0801/96)ICGC Prostate (Evaluation of biomarkers in urological diseases) (LREC 03/018)ICGC Prostate (779) (Prostate Complex CRUK Sample Cohort) (MREC/01/4/061)ICGC Prostate (Tissue collection at radical prostatectomy) (CRE-2011.373)Somatic molecular genetics of human cancers, melanoma and myeloma (Dana Farber Cancer Institute)(08/H0308/303)Breast Cancer Genome Analysis for the International Cancer Genome Consortium Working Group (09/H0306/36)Genome analysis of tumours of the bone (09/H0308/165)')
 
 

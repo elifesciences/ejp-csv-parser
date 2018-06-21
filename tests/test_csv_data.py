@@ -1,4 +1,5 @@
 import unittest
+from mock import patch
 from ejpcsvparser import csv_data as data
 
 import csv_test_settings
@@ -246,6 +247,24 @@ class TestCsvData(unittest.TestCase):
         author_id = '1399'
         attribute_name = 'poa_a_last_nm'
         expected = 'Schuman'
+        self.assertEqual(data.get_author_attribute(article_id, author_id, attribute_name), expected)
+
+    @patch('ejpcsvparser.csv_data.index_authors_on_author_id')
+    def test_get_author_attribute_bad_article_id(self, fake_index):
+        fake_index.return_value = {'99999': [1, 2]}
+        article_id = '7'
+        author_id = '1399'
+        attribute_name = 'poa_a_last_nm'
+        expected = None
+        self.assertEqual(data.get_author_attribute(article_id, author_id, attribute_name), expected)
+
+    @patch('ejpcsvparser.csv_data.index_authors_on_author_id')
+    def test_get_author_attribute_bad_author_id(self, fake_index):
+        fake_index.return_value = {'99999': [1, 2]}
+        article_id = '99999'
+        author_id = '1399'
+        attribute_name = 'poa_a_last_nm'
+        expected = None
         self.assertEqual(data.get_author_attribute(article_id, author_id, attribute_name), expected)
 
     def test_get_author_position(self):
