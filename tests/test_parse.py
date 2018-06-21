@@ -114,6 +114,12 @@ class TestParse(unittest.TestCase):
         self.assertTrue(return_value)
         self.assertEqual(article.article_type, 'research-article')
         self.assertEqual(article.display_channel, 'Tools and Resources')
+        # test id 21
+        fake_get_article_type.return_value = '21'
+        return_value = parse.set_article_type(article, article_id)
+        self.assertTrue(return_value)
+        self.assertEqual(article.article_type, 'research-article')
+        self.assertEqual(article.display_channel, 'Scientific Correspondence')
         # test id that does not exist, recreate the object first
         article_id = 21598
         article = parse.instantiate_article(article_id)
