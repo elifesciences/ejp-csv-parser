@@ -40,6 +40,9 @@ def article_type_indexes():
     article_type_index['19'] = {
         'article_type':    'research-article',
         'display_channel': 'Tools and Resources'}
+    article_type_index['21'] = {
+        'article_type':    'research-article',
+        'display_channel': 'Scientific Correspondence'}
     return article_type_index
 
 
