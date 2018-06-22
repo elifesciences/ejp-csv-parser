@@ -436,6 +436,39 @@ def parse_ethics(ethic):
     return parse_status, ethics
 
 
+def parse_dataset_node(dataset_node, dataset_type):
+    "extract attributes from a minidom node and populate a Dataset object"
+    dataset = ea.Dataset()
+
+    dataset.dataset_type = dataset_type
+
+    for node in dataset_node.childNodes:
+
+        if node.nodeName == 'authors_text_list' and node.childNodes:
+            text_node = node.childNodes[0]
+            for author_name in text_node.nodeValue.split(','):
+                if author_name.strip() != '':
+                    dataset.add_author(author_name.lstrip())
+
+        if node.nodeName == 'title':
+            text_node = node.childNodes[0]
+            dataset.title = utils.entity_to_unicode(text_node.nodeValue)
+
+        if node.nodeName == 'id':
+            text_node = node.childNodes[0]
+            dataset.source_id = utils.entity_to_unicode(text_node.nodeValue)
+
+        if node.nodeName == 'license_info':
+            text_node = node.childNodes[0]
+            dataset.license_info = utils.entity_to_unicode(text_node.nodeValue)
+
+        if node.nodeName == 'year' and node.childNodes:
+            text_node = node.childNodes[0]
+            dataset.year = utils.entity_to_unicode(text_node.nodeValue)
+
+    return dataset
+
+
 def parse_datasets(datasets_content):
     """
     Datasets content is XML with escaped angle brackets
@@ -464,37 +497,8 @@ def parse_datasets(datasets_content):
     if reparsed:
         for dataset_type in 'datasets', 'prev_published_datasets':
             datasets_nodes = reparsed.getElementsByTagName(dataset_type)[0]
-
-            for d_nodes in datasets_nodes.getElementsByTagName("dataset"):
-                dataset = ea.Dataset()
-
-                dataset.dataset_type = dataset_type
-
-                for node in d_nodes.childNodes:
-
-                    if node.nodeName == 'authors_text_list' and node.childNodes:
-                        text_node = node.childNodes[0]
-                        for author_name in text_node.nodeValue.split(','):
-                            if author_name.strip() != '':
-                                dataset.add_author(author_name.lstrip())
-
-                    if node.nodeName == 'title':
-                        text_node = node.childNodes[0]
-                        dataset.title = utils.entity_to_unicode(text_node.nodeValue)
-
-                    if node.nodeName == 'id':
-                        text_node = node.childNodes[0]
-                        dataset.source_id = utils.entity_to_unicode(text_node.nodeValue)
-
-                    if node.nodeName == 'license_info':
-                        text_node = node.childNodes[0]
-                        dataset.license_info = utils.entity_to_unicode(text_node.nodeValue)
-
-                    if node.nodeName == 'year' and node.childNodes:
-                        text_node = node.childNodes[0]
-                        dataset.year = utils.entity_to_unicode(text_node.nodeValue)
-
-                datasets.append(dataset)
+            for dataset_node in datasets_nodes.getElementsByTagName("dataset"):
+                datasets.append(parse_dataset_node(dataset_node, dataset_type))
 
         # Parse the data availability statement
         if reparsed.getElementsByTagName('data_availability_textbox'):
