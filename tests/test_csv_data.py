@@ -2,7 +2,8 @@ import unittest
 from mock import patch
 from ejpcsvparser import csv_data as data
 
-import csv_test_settings
+from tests import csv_test_settings
+
 
 def override_settings():
     "override the settings for testing"
@@ -12,6 +13,11 @@ def override_settings():
     data.CSV_FILES = csv_test_settings.CSV_FILES
     data.COLUMN_HEADINGS = csv_test_settings.CSV_COLUMN_HEADINGS
     data.OVERFLOW_CSV_FILES = csv_test_settings.OVERFLOW_CSV_FILES
+
+
+def clean_csv_fixture_path(path):
+    return '/'.join(['tests', 'test_data', 'clean_csv', path])
+
 
 class TestCsvData(unittest.TestCase):
 
@@ -26,7 +32,7 @@ class TestCsvData(unittest.TestCase):
         self.join_lines_passes.append(("\n", "two \n", 10, "two \n"))
 
         self.do_add_line_passes = []
-        self.do_add_line_passes.append(("", 1, True)) # blank header row
+        self.do_add_line_passes.append(("", 1, True))  # blank header row
         self.do_add_line_passes.append(('"A typical header row"', 1, True))
         self.do_add_line_passes.append(("", 10, False))
         self.do_add_line_passes.append(('"a full line","it is"', 10, True))
@@ -38,9 +44,6 @@ class TestCsvData(unittest.TestCase):
         self.clean_csv_passes = []
         self.clean_csv_passes.append(('manuscript.csv', 'manuscript_expected.csv'))
         self.clean_csv_passes.append(('datasets.csv', 'datasets_expected.csv'))
-
-    def clean_csv_fixture_path(self, path):
-        return '/'.join(['tests', 'test_data', 'clean_csv', path])
 
     def test_join_lines(self):
         for (line_one, line_two, line_number, expected) in self.join_lines_passes:
@@ -81,8 +84,8 @@ class TestCsvData(unittest.TestCase):
     def test_clean_csv(self):
         "test clean_csv using file read and writes"
         for (input_csv, expected_csv) in self.clean_csv_passes:
-            input_csv_path = self.clean_csv_fixture_path(input_csv)
-            expected_csv_path = self.clean_csv_fixture_path(expected_csv)
+            input_csv_path = clean_csv_fixture_path(input_csv)
+            expected_csv_path = clean_csv_fixture_path(expected_csv)
             new_path = data.clean_csv(input_csv_path)
             content = None
             expected_data = None
@@ -95,9 +98,9 @@ class TestCsvData(unittest.TestCase):
             self.assertIsNotNone(expected_data)
             self.assertEqual(content, expected_data,
                              '{input_csv} does not equal {expected_csv}'.format(
-                                input_csv=input_csv,
-                                expected_csv=expected_csv
-                                ))
+                                 input_csv=input_csv,
+                                 expected_csv=expected_csv
+                                 ))
 
     def test_get_csv_path(self):
         path_type = 'authors'
@@ -166,7 +169,8 @@ class TestCsvData(unittest.TestCase):
 
     def test_get_abstract(self):
         article_id = 3
-        expected = 'This abstract includes LTLTiGTGTPINK1LTLT/iGTGT &amp; LTLTiGTGTparkinLTLT/iGTGT LTLT 20 GTGT 10'
+        expected = ('This abstract includes LTLTiGTGTPINK1LTLT/iGTGT &amp; ' +
+                    'LTLTiGTGTparkinLTLT/iGTGT LTLT 20 GTGT 10')
         self.assertEqual(data.get_abstract(article_id), expected)
 
     def test_get_doi(self):
@@ -231,7 +235,14 @@ class TestCsvData(unittest.TestCase):
 
     def test_get_ethics(self):
         article_id = 3
-        expected = 'LTLTxmlGTGTLTLTanimal_subjectsGTGTLTLTinvolved_commentsGTGTAll animals received human care and experimental treatment  authorized by the Animal Experimentation Ethics Committee (CEEA) of the University of Barcelona (expedient number 78/05), in compliance with institutional guidelines regulated by the European Community.LTLT/involved_commentsGTGTLTLTinvolved_indGTGT1LTLT/involved_indGTGTLTLT/animal_subjectsGTGTLTLThuman_subjectsGTGTLTLTinvolved_indGTGT0LTLT/involved_indGTGTLTLT/human_subjectsGTGTLTLT/xmlGTGT'
+        expected = ('LTLTxmlGTGTLTLTanimal_subjectsGTGTLTLTinvolved_commentsGTGTAll animals ' +
+                    'received human care and experimental treatment  authorized by the Animal ' +
+                    'Experimentation Ethics Committee (CEEA) of the University of Barcelona ' +
+                    '(expedient number 78/05), in compliance with institutional guidelines ' +
+                    'regulated by the European Community.LTLT/involved_commentsGTGT' +
+                    'LTLTinvolved_indGTGT1LTLT/involved_indGTGTLTLT/animal_subjectsGTGT' +
+                    'LTLThuman_subjectsGTGTLTLTinvolved_indGTGT0LTLT/involved_indGTGT' +
+                    'LTLT/human_subjectsGTGTLTLT/xmlGTGT')
         self.assertEqual(data.get_ethics(article_id), expected)
         article_id = 99999
         expected = None
@@ -378,7 +389,11 @@ class TestCsvData(unittest.TestCase):
 
     def test_get_datasets(self):
         article_id = 7
-        expected = 'LTLTxmlGTGTLTLTdata_availability_textboxGTGTOnly availability textLTLT/data_availability_textboxGTGTLTLTdatasetsGTGTLTLTdatasets_indGTGT0LTLT/datasets_indGTGTLTLT/datasetsGTGTLTLTprev_published_datasetsGTGTLTLTdatasets_indGTGT0LTLT/datasets_indGTGTLTLT/prev_published_datasetsGTGTLTLT/xmlGTGT'
+        expected = ('LTLTxmlGTGTLTLTdata_availability_textboxGTGTOnly availability text' +
+                    'LTLT/data_availability_textboxGTGTLTLTdatasetsGTGTLTLTdatasets_indGTGT0' +
+                    'LTLT/datasets_indGTGTLTLT/datasetsGTGTLTLTprev_published_datasetsGTGT' +
+                    'LTLTdatasets_indGTGT0LTLT/datasets_indGTGTLTLT/prev_published_datasetsGTGT' +
+                    'LTLT/xmlGTGT')
         self.assertEqual(data.get_datasets(article_id), expected)
         # test missing row
         article_id = 99999
@@ -428,7 +443,8 @@ class TestCsvData(unittest.TestCase):
 
     def test_get_funding_note(self):
         article_id = '12717'
-        expected = 'The funders had no role in study design, data collection and interpretation, or the decision to submit the work for publication.'
+        expected = ('The funders had no role in study design, data collection and ' +
+                    'interpretation, or the decision to submit the work for publication.')
         self.assertEqual(data.get_funding_note(article_id), expected)
 
 

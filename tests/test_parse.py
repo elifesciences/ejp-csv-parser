@@ -1,8 +1,8 @@
 import unittest
 import time
 from mock import patch
-from ejpcsvparser import parse
 from elifearticle.article import Article
+from ejpcsvparser import parse
 
 
 def generate_date(date_string="2013-10-03", date_format="%Y-%m-%d"):
@@ -10,21 +10,27 @@ def generate_date(date_string="2013-10-03", date_format="%Y-%m-%d"):
     return time.strptime(date_string, date_format)
 
 
+def fixture_path(path):
+    return '/'.join(['tests', 'test_data', path])
+
+
 class TestParse(unittest.TestCase):
 
     def setUp(self):
         pass
-
 
     def test_build_article(self):
         "build an article"
         article_id = 21598
         article, error_count, error_messages = parse.build_article(article_id)
         self.assertIsNotNone(article)
+        self.assertEqual(error_count, 0)
+        self.assertEqual(len(error_messages), 0)
         article_id = 99999
         article, error_count, error_messages = parse.build_article(article_id)
+        self.assertGreater(error_count, 0)
+        self.assertGreater(len(error_messages), 0)
         self.assertIsNone(article)
-
 
     def test_instantiate_article(self):
         article_id = 21598
@@ -35,7 +41,6 @@ class TestParse(unittest.TestCase):
         article_id = 99999
         self.assertIsNone(parse.instantiate_article(article_id))
 
-
     @patch('ejpcsvparser.csv_data.get_doi')
     def test_instantiate_article_no_doi(self, fake_get_doi):
         fake_get_doi.return_value = ''
@@ -44,28 +49,30 @@ class TestParse(unittest.TestCase):
         self.assertIsNotNone(article, 'could not instantiate article object')
         self.assertEqual(article.doi, '10.7554/eLife.21598')
 
-
     def test_set_title(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_title(article, '12')
         self.assertTrue(return_value)
-        self.assertEqual(article.title, 'A title with Y<sup>1</sup>S<sup>2</sup>P<sup>3</sup>T<sup>4</sup>S<sup>5</sup>P<sup>6</sup>S<sup>7</sup> repeats, <italic>Drosophila</italic> and "quotations".')
+        self.assertEqual(article.title, (
+            'A title with Y<sup>1</sup>S<sup>2</sup>P<sup>3</sup>T<sup>4</sup>S<sup>5</sup>' +
+            'P<sup>6</sup>S<sup>7</sup> repeats, <italic>Drosophila</italic> and "quotations".'))
         # test not finding a value
         article = Article()
         return_value = parse.set_title(article, '99999')
         self.assertFalse(return_value)
 
-
     def test_set_abstract(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_abstract(article, '12')
         self.assertTrue(return_value)
-        self.assertEqual(article.abstract, 'In this abstract are consensus Y<sup>1</sup>S<sup>2</sup>P<sup>3</sup>T<sup>4</sup>S<sup>5</sup>P<sup>6</sup>S<sup>7</sup> repeats, <italic>Drosophila</italic> and "quotations".')
+        self.assertEqual(article.abstract, (
+            'In this abstract are consensus Y<sup>1</sup>S<sup>2</sup>P<sup>3</sup>' +
+            'T<sup>4</sup>S<sup>5</sup>P<sup>6</sup>S<sup>7</sup> repeats, ' +
+            '<italic>Drosophila</italic> and "quotations".'))
         # test not finding a value
         article = Article()
         return_value = parse.set_abstract(article, '99999')
         self.assertFalse(return_value)
-
 
     def test_set_article_type(self):
         article = parse.instantiate_article('12')
@@ -77,7 +84,6 @@ class TestParse(unittest.TestCase):
         article = Article()
         return_value = parse.set_article_type(article, '99999')
         self.assertFalse(return_value)
-
 
     @patch('ejpcsvparser.csv_data.get_article_type')
     def test_set_article_type_by_id(self, fake_get_article_type):
@@ -129,7 +135,6 @@ class TestParse(unittest.TestCase):
         self.assertEqual(article.article_type, 'research-article')  # object default value
         self.assertEqual(article.display_channel, None)
 
-
     def test_set_license(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_license(article, '12')
@@ -140,8 +145,11 @@ class TestParse(unittest.TestCase):
         self.assertEqual(article.license.copyright, True)
         self.assertEqual(article.license.href, 'http://creativecommons.org/licenses/by/4.0/')
         self.assertEqual(article.license.name, 'Creative Commons Attribution License')
-        self.assertEqual(article.license.paragraph1, 'This article is distributed under the terms of the ')
-        self.assertEqual(article.license.paragraph2, ' permitting unrestricted use and redistribution provided that the original author and source are credited.')
+        self.assertEqual(article.license.paragraph1,
+                         'This article is distributed under the terms of the ')
+        self.assertEqual(article.license.paragraph2, (
+            ' permitting unrestricted use and redistribution provided that the original ' +
+            'author and source are credited.'))
         # test license_id 2
         article = parse.instantiate_article('2935')
         return_value = parse.set_license(article, '2935')
@@ -152,13 +160,15 @@ class TestParse(unittest.TestCase):
         self.assertEqual(article.license.copyright, False)
         self.assertEqual(article.license.href, 'http://creativecommons.org/publicdomain/zero/1.0/')
         self.assertEqual(article.license.name, 'Creative Commons CC0')
-        self.assertEqual(article.license.paragraph1, 'This is an open-access article, free of all copyright, and may be freely reproduced, distributed, transmitted, modified, built upon, or otherwise used by anyone for any lawful purpose. The work is made available under the ')
+        self.assertEqual(article.license.paragraph1, (
+            'This is an open-access article, free of all copyright, and may be freely ' +
+            'reproduced, distributed, transmitted, modified, built upon, or otherwise ' +
+            'used by anyone for any lawful purpose. The work is made available under the '))
         self.assertEqual(article.license.paragraph2, ' public domain dedication.')
         # test not finding a value
         article = Article()
         return_value = parse.set_license(article, '99999')
         self.assertFalse(return_value)
-
 
     def test_add_date_to_article_no_article(self):
         "for coverage test supplying no article"
@@ -168,7 +178,6 @@ class TestParse(unittest.TestCase):
         return_value = parse.add_date_to_article(article, date_type, date_string)
         self.assertFalse(return_value)
 
-
     def test_add_date_to_article_cannot_add_date(self):
         "for coverage test supplying no article"
         article = Article(doi='10.7554/eLife.00000')
@@ -176,7 +185,6 @@ class TestParse(unittest.TestCase):
         date_string = '2012-11'
         return_value = parse.add_date_to_article(article, date_type, date_string)
         self.assertFalse(return_value)
-
 
     def test_set_dates(self):
         article = parse.instantiate_article('12')
@@ -190,7 +198,6 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_dates(article, '99999')
         self.assertFalse(return_value)
 
-
     @patch('ejpcsvparser.csv_data.get_received_date')
     def test_set_dates_no_received_date(self, fake_get_received_date):
         fake_get_received_date.return_value = ' '
@@ -198,7 +205,6 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_dates(article, '12')
         self.assertTrue(return_value)
         self.assertEqual(article.get_date('received').date, generate_date("2012-05-28"))
-
 
     @patch('ejpcsvparser.csv_data.get_receipt_date')
     @patch('ejpcsvparser.csv_data.get_received_date')
@@ -210,18 +216,23 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_dates(article, '12')
         self.assertFalse(return_value)
 
-
     def test_set_ethics(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_ethics(article, '12')
         self.assertTrue(return_value)
-        self.assertEqual(article.ethics, [u'Animal experimentation: All surgical procedures and experiments were conducted according to the German federal animal welfare guidelines and were approved by the animal ethics committee responsible for T\xfcbingen, Germany (Regierungspraesidium T\xfcbingen) under protocol numbers 3/07 and 5/09. Animals were deeply anaesthetized with Urethane (1.6-2 mg/kg), with the depth of anesthesia maintained throughout the course of the experiment with supplementary doses as required. Every attempt was made to ensure minimum discomfort to the animals at all times.'])
+        self.assertEqual(article.ethics, [
+            u'Animal experimentation: All surgical procedures and experiments were conducted ' +
+            u'according to the German federal animal welfare guidelines and were approved by the ' +
+            u'animal ethics committee responsible for T\xfcbingen, Germany (Regierungspraesidium ' +
+            u'T\xfcbingen) under protocol numbers 3/07 and 5/09. Animals were deeply ' +
+            u'anaesthetized with Urethane (1.6-2 mg/kg), with the depth of anesthesia maintained ' +
+            u'throughout the course of the experiment with supplementary doses as required. ' +
+            u'Every attempt was made to ensure minimum discomfort to the animals at all times.'])
         # test not finding a value, currently still returns True
         article = Article()
         return_value = parse.set_ethics(article, '99999')
         self.assertTrue(return_value)
         self.assertEqual(article.ethics, [])
-
 
     @patch('ejpcsvparser.csv_data.get_ethics')
     def test_set_ethics_bad_data(self, fake_get_ethics):
@@ -231,7 +242,6 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_ethics(article, '12')
         self.assertFalse(return_value)
         self.assertEqual(article.ethics, [])
-
 
     def test_set_datasets(self):
         article = parse.instantiate_article('14997')
@@ -253,12 +263,16 @@ class TestParse(unittest.TestCase):
         # check dataset 2
         self.assertEqual(article.datasets[1].dataset_type, 'prev_published_datasets')
         self.assertEqual(article.datasets[1].authors, ['Cembrowski M', 'Spruston N'])
-        self.assertEqual(article.datasets[1].source_id, 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE67403')
+        self.assertEqual(article.datasets[1].source_id,
+                         'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE67403')
         self.assertEqual(article.datasets[1].year, '2016')
-        self.assertEqual(article.datasets[1].title, 'Spatial gene expression gradients underlie prominent heterogeneity of CA1 pyramidal neurons')
+        self.assertEqual(article.datasets[1].title,
+                         ('Spatial gene expression gradients underlie prominent heterogeneity ' +
+                          'of CA1 pyramidal neurons'))
         self.assertEqual(article.datasets[1].license_info, 'GSE67403')
         # check data availability
-        self.assertEqual(article.data_availability, u'\u2022Data Availability text <italic>"here"</italic> & such')
+        self.assertEqual(article.data_availability,
+                         u'\u2022Data Availability text <italic>"here"</italic> & such')
 
         # test not finding a value, currently still returns True
         article = Article()
@@ -266,7 +280,6 @@ class TestParse(unittest.TestCase):
         self.assertTrue(return_value)
         self.assertEqual(article.datasets, [])
         self.assertEqual(article.data_availability, None)
-
 
     @patch('ejpcsvparser.csv_data.get_datasets')
     def test_set_datasets_bad_data(self, fake_get_datasets):
@@ -276,7 +289,6 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_datasets(article, '12')
         self.assertFalse(return_value)
         self.assertEqual(article.datasets, [])
-
 
     def test_set_categories(self):
         article = parse.instantiate_article('12')
@@ -288,14 +300,12 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_categories(article, '99999')
         self.assertTrue(return_value)
 
-
     @patch('ejpcsvparser.csv_data.get_subjects')
     def test_set_categories_empty_data(self, fake_get_subjects):
         fake_get_subjects.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_categories(article, '12')
         self.assertTrue(return_value)
-
 
     def test_set_organsims(self):
         article = parse.instantiate_article('3')
@@ -311,14 +321,12 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_organsims(article, '99999')
         self.assertTrue(return_value)
 
-
     @patch('ejpcsvparser.csv_data.get_organisms')
     def test_set_organisms_empty_data(self, fake_get_organisms):
         fake_get_organisms.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_organsims(article, '12')
         self.assertTrue(return_value)
-
 
     def test_set_keywords(self):
         article = parse.instantiate_article('12')
@@ -333,14 +341,12 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_keywords(article, '99999')
         self.assertTrue(return_value)
 
-
     @patch('ejpcsvparser.csv_data.get_keywords')
     def test_set_keywords_empty_data(self, fake_get_keywords):
         fake_get_keywords.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_keywords(article, '12')
         self.assertTrue(return_value)
-
 
     def test_set_author_info(self):
         "test settings some authors"
@@ -388,14 +394,12 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_author_info(article, '99999')
         self.assertFalse(return_value)
 
-
     @patch('ejpcsvparser.csv_data.get_author_ids')
     def test_set_author_info_empty_data(self, fake_get_author_ids):
         fake_get_author_ids.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_author_info(article, '12')
         self.assertTrue(return_value)
-
 
     def test_set_editor_info(self):
         article = parse.instantiate_article('12717')
@@ -413,14 +417,12 @@ class TestParse(unittest.TestCase):
         self.assertEqual(aff.institution, 'Fred Hutchinson Cancer Research Center')
         self.assertEqual(aff.country, 'United States')
 
-
     @patch('ejpcsvparser.csv_data.get_me_first_nm')
     def test_set_editor_info_bad_data(self, fake_get_me_first_nm):
         fake_get_me_first_nm.return_value = None
         article = parse.instantiate_article('12')
         return_value = parse.set_editor_info(article, '12')
         self.assertFalse(return_value)
-
 
     def test_set_funding(self):
         article = parse.instantiate_article('12717')
@@ -439,7 +441,6 @@ class TestParse(unittest.TestCase):
         self.assertEqual(award.principal_award_recipients[0].surname, 'Solecki')
         self.assertEqual(award.principal_award_recipients[0].given_name, 'David J')
 
-
     @patch('ejpcsvparser.csv_data.get_funding_ids')
     def test_set_funding_empty_data(self, fake_get_funding_ids):
         fake_get_funding_ids.return_value = None
@@ -447,13 +448,15 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_funding(article, '12')
         self.assertTrue(return_value)
 
-
     def test_parse_ethics(self):
         "test examples of parsing ethics data"
-        ethic = "LTLTxmlGTGTLTLTanimal_subjectsGTGTLTLTinvolved_indGTGT0LTLT/involved_indGTGTLTLT/animal_subjectsGTGTLTLThuman_subjectsGTGTLTLTclinical_trial_indGTGT0LTLT/clinical_trial_indGTGTLTLTinvolved_commentsGTGTWe obtained informed consent and consent to publish from participants enrolled in this study.Ethical approval references:Genome Analysis of myeloid and lymphoid malignancies (10/H0306/40)Genomic Analysis of Mesothelioma (11/EE/0444)Myeloid and lymphoid cancer genome analysis (07/S1402/90)The Treatment of Down Syndrome Children with Acute Myeloid Leukemia and Myelodysplastic Syndrome(AAML0431)CLL (chronic lymphocytic leukaemia) genome analysis (07/Q0104/3)CGP-Exome sequencing of Down syndrome associated acute myeloid leukemia samples (IRB 13-010133)Cancer Genome Project - Global approaches to characterising the molecular basis of paediatric ependymoma (05/MRE04/70)PREDICT-Cohort (09/H0801/96)ICGC Prostate (Evaluation of biomarkers in urological diseases) (LREC 03/018)ICGC Prostate (779) (Prostate Complex CRUK Sample Cohort) (MREC/01/4/061)ICGC Prostate (Tissue collection at radical prostatectomy) (CRE-2011.373)Somatic molecular genetics of human cancers, melanoma and myeloma (Dana Farber Cancer Institute)(08/H0308/303)Breast Cancer Genome Analysis for the International Cancer Genome Consortium Working Group (09/H0306/36)Genome analysis of tumours of the bone (09/H0308/165)LTLT/involved_commentsGTGTLTLTinvolved_indGTGT1LTLT/involved_indGTGTLTLT/human_subjectsGTGTLTLT/xmlGTGT"
+        with open(fixture_path('ethic_data.txt'), 'rb') as open_file:
+            ethic = open_file.read()
+        with open(fixture_path('ethic_expected_0.txt'), 'rb') as open_file:
+            expected = open_file.read()
         parse_status, ethics = parse.parse_ethics(ethic)
-        self.assertEqual(ethics[0], 'Human subjects: We obtained informed consent and consent to publish from participants enrolled in this study.Ethical approval references:Genome Analysis of myeloid and lymphoid malignancies (10/H0306/40)Genomic Analysis of Mesothelioma (11/EE/0444)Myeloid and lymphoid cancer genome analysis (07/S1402/90)The Treatment of Down Syndrome Children with Acute Myeloid Leukemia and Myelodysplastic Syndrome(AAML0431)CLL (chronic lymphocytic leukaemia) genome analysis (07/Q0104/3)CGP-Exome sequencing of Down syndrome associated acute myeloid leukemia samples (IRB 13-010133)Cancer Genome Project - Global approaches to characterising the molecular basis of paediatric ependymoma (05/MRE04/70)PREDICT-Cohort (09/H0801/96)ICGC Prostate (Evaluation of biomarkers in urological diseases) (LREC 03/018)ICGC Prostate (779) (Prostate Complex CRUK Sample Cohort) (MREC/01/4/061)ICGC Prostate (Tissue collection at radical prostatectomy) (CRE-2011.373)Somatic molecular genetics of human cancers, melanoma and myeloma (Dana Farber Cancer Institute)(08/H0308/303)Breast Cancer Genome Analysis for the International Cancer Genome Consortium Working Group (09/H0306/36)Genome analysis of tumours of the bone (09/H0308/165)')
-
+        self.assertTrue(parse_status)
+        self.assertEqual(ethics[0], expected)
 
     def test_parse_group_authors(self):
         "test group author edge cases"
@@ -464,12 +467,15 @@ class TestParse(unittest.TestCase):
         group_author_dict = parse.parse_group_authors('0')
         self.assertIsNone(group_author_dict)
 
-
     def test_build_article_and_check(self):
         "build one article and check some values"
         article_id = 21598
         article, error_count, error_messages = parse.build_article(article_id)
-        self.assertEqual(article.title, 'Cryo-EM structures of the autoinhibited <italic>E. coli</italic> ATP synthase in three rotational states')
+        self.assertEqual(error_count, 0)
+        self.assertEqual(len(error_messages), 0)
+        self.assertEqual(article.title,
+                         ('Cryo-EM structures of the autoinhibited <italic>E. coli</italic> ' +
+                          'ATP synthase in three rotational states'))
 
 
 if __name__ == '__main__':
