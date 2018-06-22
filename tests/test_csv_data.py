@@ -20,33 +20,21 @@ def clean_csv_fixture_path(path):
 
 
 class TestCsvData(unittest.TestCase):
-
+    "base class for testing CSV data to override settings"
     def setUp(self):
         override_settings()
 
-        self.join_lines_passes = []
-        self.join_lines_passes.append(("", "\n", 1, "\n"))
-        self.join_lines_passes.append(("", "\n", 10, " "))
-        self.join_lines_passes.append(("one\n", '"', 10, 'one"'))
-        self.join_lines_passes.append(("one\r\n", '    two', 10, 'onetwo'))
-        self.join_lines_passes.append(("\n", "two \n", 10, "two \n"))
 
-        self.do_add_line_passes = []
-        self.do_add_line_passes.append(("", 1, True))  # blank header row
-        self.do_add_line_passes.append(('"A typical header row"', 1, True))
-        self.do_add_line_passes.append(("", 10, False))
-        self.do_add_line_passes.append(('"a full line","it is"', 10, True))
-        self.do_add_line_passes.append(('"', 10, True))
-
-        self.flatten_lines_passes = []
-        self.flatten_lines_passes.append((0, ["\"a\n", "   b\n", '"\n'], '"ab"\n'))
-
-        self.clean_csv_passes = []
-        self.clean_csv_passes.append(('manuscript.csv', 'manuscript_expected.csv'))
-        self.clean_csv_passes.append(('datasets.csv', 'datasets_expected.csv'))
+class TestCleanCsv(TestCsvData):
 
     def test_join_lines(self):
-        for (line_one, line_two, line_number, expected) in self.join_lines_passes:
+        join_lines_passes = []
+        join_lines_passes.append(("", "\n", 1, "\n"))
+        join_lines_passes.append(("", "\n", 10, " "))
+        join_lines_passes.append(("one\n", '"', 10, 'one"'))
+        join_lines_passes.append(("one\r\n", '    two', 10, 'onetwo'))
+        join_lines_passes.append(("\n", "two \n", 10, "two \n"))
+        for (line_one, line_two, line_number, expected) in join_lines_passes:
             content = data.join_lines(line_one, line_two, line_number)
             self.assertEqual(
                 content, expected,
@@ -58,7 +46,13 @@ class TestCsvData(unittest.TestCase):
                     ))
 
     def test_do_add_line(self):
-        for (content, line_number, expected) in self.do_add_line_passes:
+        do_add_line_passes = []
+        do_add_line_passes.append(("", 1, True))  # blank header row
+        do_add_line_passes.append(('"A typical header row"', 1, True))
+        do_add_line_passes.append(("", 10, False))
+        do_add_line_passes.append(('"a full line","it is"', 10, True))
+        do_add_line_passes.append(('"', 10, True))
+        for (content, line_number, expected) in do_add_line_passes:
             add_line = data.do_add_line(content, line_number)
             self.assertEqual(
                 add_line, expected,
@@ -71,7 +65,9 @@ class TestCsvData(unittest.TestCase):
 
     def test_flatten_lines(self):
         "test flattening lines separately"
-        for (data_start_row, iterable, expected) in self.flatten_lines_passes:
+        flatten_lines_passes = []
+        flatten_lines_passes.append((0, ["\"a\n", "   b\n", '"\n'], '"ab"\n'))
+        for (data_start_row, iterable, expected) in flatten_lines_passes:
             content = data.flatten_lines(iterable, data_start_row)
             self.assertEqual(
                 content, expected,
@@ -83,7 +79,10 @@ class TestCsvData(unittest.TestCase):
 
     def test_clean_csv(self):
         "test clean_csv using file read and writes"
-        for (input_csv, expected_csv) in self.clean_csv_passes:
+        clean_csv_passes = []
+        clean_csv_passes.append(('manuscript.csv', 'manuscript_expected.csv'))
+        clean_csv_passes.append(('datasets.csv', 'datasets_expected.csv'))
+        for (input_csv, expected_csv) in clean_csv_passes:
             input_csv_path = clean_csv_fixture_path(input_csv)
             expected_csv_path = clean_csv_fixture_path(expected_csv)
             new_path = data.clean_csv(input_csv_path)
@@ -101,6 +100,9 @@ class TestCsvData(unittest.TestCase):
                                  input_csv=input_csv,
                                  expected_csv=expected_csv
                                  ))
+
+
+class TestIndexing(TestCsvData):
 
     def test_get_csv_path(self):
         path_type = 'authors'
@@ -134,6 +136,9 @@ class TestCsvData(unittest.TestCase):
         article_author_index = data.index_authors_on_author_id()
         self.assertEqual(len(article_author_index), expected_row_count)
 
+
+class TestArticleAttributes(TestCsvData):
+
     def test_get_article_attributes(self):
         article_id = 3
         attribute_type = 'title'
@@ -142,30 +147,48 @@ class TestCsvData(unittest.TestCase):
         self.assertEqual(data.get_article_attributes(
             article_id, attribute_type, attribute_label), expected)
 
+
+class TestSubjects(TestCsvData):
+
     def test_get_subjects(self):
         article_id = 3
         expected = ['Immunology', 'Microbiology and infectious disease']
         self.assertEqual(data.get_subjects(article_id), expected)
+
+
+class TestOrganisms(TestCsvData):
 
     def test_get_organisms(self):
         article_id = 3
         expected = ['<i>B. subtilis</i>', '<i>D. melanogaster</i>', '<i>E. coli</i>', 'Mouse']
         self.assertEqual(data.get_organisms(article_id), expected)
 
+
+class TestLicense(TestCsvData):
+
     def test_get_license(self):
         article_id = 3
         expected = '1'
         self.assertEqual(data.get_license(article_id), expected)
+
+
+class TestKeywords(TestCsvData):
 
     def test_get_keywords(self):
         article_id = 3
         expected = ['innate immunity', 'histones', 'lipid droplet', 'anti-bacterial']
         self.assertEqual(data.get_keywords(article_id), expected)
 
+
+class TestTitle(TestCsvData):
+
     def test_get_title(self):
         article_id = 3
         expected = u'''This, 'title, includes "quotation", marks & more \xfc'''
         self.assertEqual(data.get_title(article_id), expected)
+
+
+class TestAbstract(TestCsvData):
 
     def test_get_abstract(self):
         article_id = 3
@@ -173,15 +196,24 @@ class TestCsvData(unittest.TestCase):
                     'LTLTiGTGTparkinLTLT/iGTGT LTLT 20 GTGT 10')
         self.assertEqual(data.get_abstract(article_id), expected)
 
+
+class TestDoi(TestCsvData):
+
     def test_get_doi(self):
         article_id = 3
         expected = '10.7554/eLife.00003'
         self.assertEqual(data.get_doi(article_id), expected)
 
+
+class TestArticleType(TestCsvData):
+
     def test_get_article_type(self):
         article_id = 3
         expected = '10'
         self.assertEqual(data.get_article_type(article_id), expected)
+
+
+class TestDates(TestCsvData):
 
     def test_get_accepted_date(self):
         article_id = 3
@@ -197,6 +229,9 @@ class TestCsvData(unittest.TestCase):
         article_id = 3
         expected = '2012-06-27 05:06:17.413'
         self.assertEqual(data.get_receipt_date(article_id), expected)
+
+
+class TestEditor(TestCsvData):
 
     def test_get_me_id(self):
         article_id = 3
@@ -233,6 +268,9 @@ class TestCsvData(unittest.TestCase):
         expected = 'United States'
         self.assertEqual(data.get_me_country(article_id), expected)
 
+
+class TestEthics(TestCsvData):
+
     def test_get_ethics(self):
         article_id = 3
         expected = ('LTLTxmlGTGTLTLTanimal_subjectsGTGTLTLTinvolved_commentsGTGTAll animals ' +
@@ -247,6 +285,9 @@ class TestCsvData(unittest.TestCase):
         article_id = 99999
         expected = None
         self.assertEqual(data.get_ethics(article_id), expected)
+
+
+class TestAuthor(TestCsvData):
 
     def test_get_author_ids(self):
         article_id = 7
@@ -387,6 +428,9 @@ class TestCsvData(unittest.TestCase):
         expected = None
         self.assertEqual(data.get_group_authors(article_id), expected)
 
+
+class TestDatasets(TestCsvData):
+
     def test_get_datasets(self):
         article_id = 7
         expected = ('LTLTxmlGTGTLTLTdata_availability_textboxGTGTOnly availability text' +
@@ -399,6 +443,9 @@ class TestCsvData(unittest.TestCase):
         article_id = 99999
         expected = None
         self.assertEqual(data.get_datasets(article_id), expected)
+
+
+class TestFunding(TestCsvData):
 
     def test_index_funding_table(self):
         article_index = data.index_funding_table()

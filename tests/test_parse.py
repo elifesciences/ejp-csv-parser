@@ -14,10 +14,7 @@ def fixture_path(path):
     return '/'.join(['tests', 'test_data', path])
 
 
-class TestParse(unittest.TestCase):
-
-    def setUp(self):
-        pass
+class TestParseArticle(unittest.TestCase):
 
     def test_build_article(self):
         "build an article"
@@ -41,6 +38,19 @@ class TestParse(unittest.TestCase):
         article_id = 99999
         self.assertIsNone(parse.instantiate_article(article_id))
 
+    def test_build_article_and_check(self):
+        "build one article and check some values"
+        article_id = 21598
+        article, error_count, error_messages = parse.build_article(article_id)
+        self.assertEqual(error_count, 0)
+        self.assertEqual(len(error_messages), 0)
+        self.assertEqual(article.title,
+                         ('Cryo-EM structures of the autoinhibited <italic>E. coli</italic> ' +
+                          'ATP synthase in three rotational states'))
+
+
+class TestParseDoi(unittest.TestCase):
+
     @patch('ejpcsvparser.csv_data.get_doi')
     def test_instantiate_article_no_doi(self, fake_get_doi):
         fake_get_doi.return_value = ''
@@ -48,6 +58,9 @@ class TestParse(unittest.TestCase):
         article = parse.instantiate_article(article_id)
         self.assertIsNotNone(article, 'could not instantiate article object')
         self.assertEqual(article.doi, '10.7554/eLife.21598')
+
+
+class TestParseTitle(unittest.TestCase):
 
     def test_set_title(self):
         article = parse.instantiate_article('12')
@@ -61,6 +74,9 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_title(article, '99999')
         self.assertFalse(return_value)
 
+
+class TestParseAbstract(unittest.TestCase):
+
     def test_set_abstract(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_abstract(article, '12')
@@ -73,6 +89,9 @@ class TestParse(unittest.TestCase):
         article = Article()
         return_value = parse.set_abstract(article, '99999')
         self.assertFalse(return_value)
+
+
+class TestParseArticleType(unittest.TestCase):
 
     def test_set_article_type(self):
         article = parse.instantiate_article('12')
@@ -135,6 +154,9 @@ class TestParse(unittest.TestCase):
         self.assertEqual(article.article_type, 'research-article')  # object default value
         self.assertEqual(article.display_channel, None)
 
+
+class TestParseLicense(unittest.TestCase):
+
     def test_set_license(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_license(article, '12')
@@ -169,6 +191,9 @@ class TestParse(unittest.TestCase):
         article = Article()
         return_value = parse.set_license(article, '99999')
         self.assertFalse(return_value)
+
+
+class TestParseDates(unittest.TestCase):
 
     def test_add_date_to_article_no_article(self):
         "for coverage test supplying no article"
@@ -216,6 +241,9 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_dates(article, '12')
         self.assertFalse(return_value)
 
+
+class TestParseEthics(unittest.TestCase):
+
     def test_set_ethics(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_ethics(article, '12')
@@ -242,6 +270,19 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_ethics(article, '12')
         self.assertFalse(return_value)
         self.assertEqual(article.ethics, [])
+
+    def test_parse_ethics(self):
+        "test examples of parsing ethics data"
+        with open(fixture_path('ethic_data.txt'), 'rb') as open_file:
+            ethic = open_file.read()
+        with open(fixture_path('ethic_expected_0.txt'), 'rb') as open_file:
+            expected = open_file.read()
+        parse_status, ethics = parse.parse_ethics(ethic)
+        self.assertTrue(parse_status)
+        self.assertEqual(ethics[0], expected)
+
+
+class TestParseDatasets(unittest.TestCase):
 
     def test_set_datasets(self):
         article = parse.instantiate_article('14997')
@@ -290,6 +331,9 @@ class TestParse(unittest.TestCase):
         self.assertFalse(return_value)
         self.assertEqual(article.datasets, [])
 
+
+class TestParseCategories(unittest.TestCase):
+
     def test_set_categories(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_categories(article, '12')
@@ -306,6 +350,9 @@ class TestParse(unittest.TestCase):
         article = parse.instantiate_article('12')
         return_value = parse.set_categories(article, '12')
         self.assertTrue(return_value)
+
+
+class TestParseOrganisms(unittest.TestCase):
 
     def test_set_organsims(self):
         article = parse.instantiate_article('3')
@@ -328,6 +375,9 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_organsims(article, '12')
         self.assertTrue(return_value)
 
+
+class TestParseKeywords(unittest.TestCase):
+
     def test_set_keywords(self):
         article = parse.instantiate_article('12')
         return_value = parse.set_keywords(article, '12')
@@ -347,6 +397,9 @@ class TestParse(unittest.TestCase):
         article = parse.instantiate_article('12')
         return_value = parse.set_keywords(article, '12')
         self.assertTrue(return_value)
+
+
+class TestParseAuthors(unittest.TestCase):
 
     def test_set_author_info(self):
         "test settings some authors"
@@ -401,6 +454,18 @@ class TestParse(unittest.TestCase):
         return_value = parse.set_author_info(article, '12')
         self.assertTrue(return_value)
 
+    def test_parse_group_authors(self):
+        "test group author edge cases"
+        group_author_dict = parse.parse_group_authors(None)
+        self.assertIsNone(group_author_dict)
+        group_author_dict = parse.parse_group_authors('')
+        self.assertIsNone(group_author_dict)
+        group_author_dict = parse.parse_group_authors('0')
+        self.assertIsNone(group_author_dict)
+
+
+class TestParseEditors(unittest.TestCase):
+
     def test_set_editor_info(self):
         article = parse.instantiate_article('12717')
         return_value = parse.set_editor_info(article, '12717')
@@ -423,6 +488,9 @@ class TestParse(unittest.TestCase):
         article = parse.instantiate_article('12')
         return_value = parse.set_editor_info(article, '12')
         self.assertFalse(return_value)
+
+
+class TestParseFunding(unittest.TestCase):
 
     def test_set_funding(self):
         article = parse.instantiate_article('12717')
@@ -447,35 +515,6 @@ class TestParse(unittest.TestCase):
         article = parse.instantiate_article('12')
         return_value = parse.set_funding(article, '12')
         self.assertTrue(return_value)
-
-    def test_parse_ethics(self):
-        "test examples of parsing ethics data"
-        with open(fixture_path('ethic_data.txt'), 'rb') as open_file:
-            ethic = open_file.read()
-        with open(fixture_path('ethic_expected_0.txt'), 'rb') as open_file:
-            expected = open_file.read()
-        parse_status, ethics = parse.parse_ethics(ethic)
-        self.assertTrue(parse_status)
-        self.assertEqual(ethics[0], expected)
-
-    def test_parse_group_authors(self):
-        "test group author edge cases"
-        group_author_dict = parse.parse_group_authors(None)
-        self.assertIsNone(group_author_dict)
-        group_author_dict = parse.parse_group_authors('')
-        self.assertIsNone(group_author_dict)
-        group_author_dict = parse.parse_group_authors('0')
-        self.assertIsNone(group_author_dict)
-
-    def test_build_article_and_check(self):
-        "build one article and check some values"
-        article_id = 21598
-        article, error_count, error_messages = parse.build_article(article_id)
-        self.assertEqual(error_count, 0)
-        self.assertEqual(len(error_messages), 0)
-        self.assertEqual(article.title,
-                         ('Cryo-EM structures of the autoinhibited <italic>E. coli</italic> ' +
-                          'ATP synthase in three rotational states'))
 
 
 if __name__ == '__main__':
