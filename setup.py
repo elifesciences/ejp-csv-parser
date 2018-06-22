@@ -3,14 +3,15 @@ from setuptools import setup
 import ejpcsvparser
 
 with open('README.rst') as fp:
-    readme = fp.read()
+    README = fp.read()
 
-setup(name='ejpcsvparser',
+setup(
+    name='ejpcsvparser',
     version=ejpcsvparser.__version__,
     description='EJP CSV parser for building article objects.',
-    long_description=readme,
+    long_description=README,
     packages=['ejpcsvparser'],
-    license = 'MIT',
+    license='MIT',
     install_requires=[
         "elifearticle",
         "GitPython",
