@@ -273,9 +273,9 @@ class TestParseEthics(unittest.TestCase):
 
     def test_parse_ethics(self):
         "test examples of parsing ethics data"
-        with open(fixture_path('ethic_data.txt'), 'rb') as open_file:
+        with open(fixture_path('ethic_data.txt'), 'r') as open_file:
             ethic = open_file.read()
-        with open(fixture_path('ethic_expected_0.txt'), 'rb') as open_file:
+        with open(fixture_path('ethic_expected_0.txt'), 'r') as open_file:
             expected = open_file.read()
         parse_status, ethics = parse.parse_ethics(ethic)
         self.assertTrue(parse_status)
