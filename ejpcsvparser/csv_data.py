@@ -138,7 +138,7 @@ def flatten_lines(iterable, data_start_row=DATA_START_ROW):
 def clean_csv(path):
     "fix CSV file oddities making it difficult to parse"
     clean_csv_data = u''
-    new_path = os.path.join(settings.TMP_DIR, path.split('/')[-1])
+    new_path = os.path.join(TMP_DIR, os.path.split(path)[-1])
     with open(path, 'r') as open_read_file:
         clean_csv_data = flatten_lines(open_read_file)
     with open(new_path, 'w') as open_write_file:
