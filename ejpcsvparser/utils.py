@@ -185,7 +185,7 @@ def decode_cp1252(string):
         # Wrap the decode in another exception to make sure this never fails
         try:
             string = string.decode('cp1252')
-        except (UnicodeEncodeError, UnicodeDecodeError):
+        except (UnicodeEncodeError, UnicodeDecodeError, AttributeError):
             pass
     return string
 
