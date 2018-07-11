@@ -421,6 +421,8 @@ class TestParseAuthors(unittest.TestCase):
         self.assertEqual(contrib.collab, None)
         self.assertEqual(contrib.conflict, ['Senior Editor, <italic>eLife</italic>'])
         self.assertEqual(contrib.group_author_key, None)
+        # count affiliations
+        self.assertEqual(len(article.contributors[2].affiliations), 1)
         aff = article.contributors[2].affiliations[0]
         self.assertEqual(aff.phone, None)
         self.assertEqual(aff.fax, None)

@@ -258,7 +258,6 @@ def set_author_info(article, article_id):
             author = build_author(article_id, author_id, author_type)
 
             affiliation = author_affiliation(article_id, author_id)
-            author.set_affiliation(affiliation)
             # set corresponding if the affiliation has an email
             if affiliation.email:
                 author.corresp = True
