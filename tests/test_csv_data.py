@@ -1,4 +1,5 @@
 import unittest
+from six.moves import reload_module
 from mock import patch
 from ejpcsvparser import csv_data as data
 
@@ -127,11 +128,15 @@ class TestIndexing(TestCsvData):
         self.assertEqual(len(data.get_csv_data_rows(table_type)), expected_row_count)
 
     def test_index_authors_on_article_id(self):
+        # reload module first to avoid memoize remembering data from other test scenarios
+        reload_module(data)
         expected_row_count = 9
         article_index = data.index_authors_on_article_id()
         self.assertEqual(len(article_index), expected_row_count)
 
     def test_index_authors_on_author_id(self):
+        # reload module first to avoid memoize remembering data from other test scenarios
+        reload_module(data)
         expected_row_count = 9
         article_author_index = data.index_authors_on_author_id()
         self.assertEqual(len(article_author_index), expected_row_count)
