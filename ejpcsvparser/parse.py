@@ -317,7 +317,7 @@ def set_editor_info(article, article_id):
         first_name += " " + middle_name
     # create an instance of the POSContributor class
     editor = ea.Contributor(author_type, last_name, first_name)
-    LOGGER.info("editor is: %s", eautils.unicode_value(editor))
+    LOGGER.info("editor is: %s", str(editor))
     LOGGER.info("getting ed id for article %s", article_id)
     LOGGER.info("editor id is %s", data.get_me_id(article_id))
     LOGGER.info(str(type(data.get_me_id(article_id))))
