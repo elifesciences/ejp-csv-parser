@@ -76,12 +76,6 @@ def license_data(license_id):
     return license_data
 
 
-def repl(match):
-    # Convert hex to int to unicode character
-    chr_code = int(match.group(1), 16)
-    return eautils.uni_chr(chr_code)
-
-
 def entity_to_unicode(string):
     """
     Quick convert unicode HTML entities to unicode characters
@@ -102,7 +96,7 @@ def entity_to_unicode(string):
     replacements.append((r"&rdquo;", '"'))
 
     # First, replace numeric entities with unicode
-    string = re.sub(r"&#x(....);", repl, string)
+    string = re.sub(r"&#x(....);", eautils.repl, string)
     # Second, replace some specific entities specified in the list
     for entity, replacement in replacements:
         string = re.sub(entity, replacement, string)
@@ -124,7 +118,7 @@ def decode_brackets(string):
     Decode angle bracket escape sequence
     used to encode XML content
     """
-    string = eautils.unicode_value(string)
+    string = str(string)
     string = string.replace(settings.LESS_THAN_ESCAPE_SEQUENCE, '<')
     string = string.replace(settings.GREATER_THAN_ESCAPE_SEQUENCE, '>')
     return string

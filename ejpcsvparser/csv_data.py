@@ -154,11 +154,8 @@ def get_csv_sheet(table_type):
 
     path = clean_csv(path)
 
-    if sys.version_info[0] < 3:
-        handle = open(path, 'rb')
-    else:
-        # https://docs.python.org/3/library/functions.html#open
-        handle = io.open(path, 'r', newline='', encoding='utf-8', errors='surrogateescape')
+    # https://docs.python.org/3/library/functions.html#open
+    handle = io.open(path, 'r', newline='', encoding='utf-8', errors='surrogateescape')
 
     with handle as csvfile:
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
