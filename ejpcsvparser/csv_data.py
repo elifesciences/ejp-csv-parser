@@ -340,6 +340,14 @@ def get_me_middle_nm(article_id):
 
 
 @utils.entities
+def get_me_suffix(article_id):
+    try:
+        return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_suffix"])
+    except ValueError:
+        return None
+
+
+@utils.entities
 def get_me_institution(article_id):
     return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_institution"])
 
@@ -409,6 +417,14 @@ def get_author_first_name(article_id, author_id):
 @utils.entities
 def get_author_middle_name(article_id, author_id):
     return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_middle_name"])
+
+
+@utils.entities
+def get_author_suffix(article_id, author_id):
+    try:
+        return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_suffix"])
+    except ValueError:
+        return None
 
 
 @utils.entities

@@ -479,6 +479,7 @@ class TestParseEditors(unittest.TestCase):
         self.assertEqual(editor.contrib_type, 'editor')
         self.assertEqual(editor.surname, 'Cooper')
         self.assertEqual(editor.given_name, 'Jonathan A')
+        self.assertEqual(editor.suffix, 'Jnr')
         aff = article.contributors[0].affiliations[0]
         self.assertEqual(aff.department, 'Division of Basic Sciences')
         self.assertEqual(aff.institution, 'Fred Hutchinson Cancer Research Center')
