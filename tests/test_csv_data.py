@@ -258,6 +258,18 @@ class TestEditor(TestCsvData):
         expected = ' '
         self.assertEqual(data.get_me_middle_nm(article_id), expected)
 
+    def test_get_me_suffix(self):
+        article_id = 7
+        expected = 'Jnr'
+        self.assertEqual(data.get_me_suffix(article_id), expected)
+
+    @patch('ejpcsvparser.csv_data.article_first_value')
+    def test_get_me_suffix_exception(self, fake_article_first_value):
+        fake_article_first_value.side_effect = ValueError('An exception')
+        article_id = 7
+        expected = None
+        self.assertEqual(data.get_me_suffix(article_id), expected)
+
     def test_get_me_institution(self):
         article_id = 3
         expected = 'Harvard Medical School'
@@ -305,6 +317,21 @@ class TestAuthor(TestCsvData):
         attribute_name = 'poa_a_last_nm'
         expected = 'Schuman'
         self.assertEqual(data.get_author_attribute(article_id, author_id, attribute_name), expected)
+
+    def test_get_author_suffix(self):
+        article_id = '7'
+        author_id = '1399'
+        attribute_name = 'poa_a_suffix'
+        expected = 'Jnr'
+        self.assertEqual(data.get_author_attribute(article_id, author_id, attribute_name), expected)
+
+    @patch('ejpcsvparser.csv_data.get_author_attribute')
+    def test_get_author_suffix_exception(self, fake_get_author_attribute):
+        fake_get_author_attribute.side_effect = ValueError('An exception')
+        article_id = 7
+        author_id = '1399'
+        expected = None
+        self.assertEqual(data.get_author_suffix(article_id, author_id), expected)
 
     @patch('ejpcsvparser.csv_data.index_authors_on_author_id')
     def test_get_author_attribute_bad_article_id(self, fake_index):

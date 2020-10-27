@@ -205,11 +205,14 @@ def build_author(article_id, author_id, author_type):
     first_name = utils.decode_cp1252(data.get_author_first_name(article_id, author_id))
     last_name = utils.decode_cp1252(data.get_author_last_name(article_id, author_id))
     middle_name = utils.decode_cp1252(data.get_author_middle_name(article_id, author_id))
+    suffix = utils.decode_cp1252(data.get_author_suffix(article_id, author_id))
     # initials = middle_name_initials(middle_name)
     if middle_name.strip() != "":
         # Middle name add to the first name / given name
         first_name += " " + middle_name
     author = ea.Contributor(author_type, last_name, first_name)
+    if suffix and suffix.strip() != "":
+        author.suffix = suffix
     return author
 
 
@@ -307,6 +310,7 @@ def set_editor_info(article, article_id):
     first_name = utils.decode_cp1252(data.get_me_first_nm(article_id))
     last_name = utils.decode_cp1252(data.get_me_last_nm(article_id))
     middle_name = utils.decode_cp1252(data.get_me_middle_nm(article_id))
+    suffix = utils.decode_cp1252(data.get_me_suffix(article_id))
     # no first and last name then return False
     if not(first_name and last_name):
         LOGGER.error("could not set editor")
@@ -317,6 +321,8 @@ def set_editor_info(article, article_id):
         first_name += " " + middle_name
     # create an instance of the POSContributor class
     editor = ea.Contributor(author_type, last_name, first_name)
+    if suffix and suffix.strip() != "":
+        editor.suffix = suffix
     LOGGER.info("editor is: %s", str(editor))
     LOGGER.info("getting ed id for article %s", article_id)
     LOGGER.info("editor id is %s", data.get_me_id(article_id))
