@@ -28,6 +28,9 @@ def article_type_indexes():
     article_type_index['1'] = {
         'article_type':    'research-article',
         'display_channel': 'Research Article'}
+    article_type_index['8'] = {
+        'article_type':    'discussion',
+        'display_channel': 'Feature Article'}
     article_type_index['10'] = {
         'article_type':    'research-article',
         'display_channel': 'Feature Article'}

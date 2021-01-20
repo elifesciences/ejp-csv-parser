@@ -117,11 +117,11 @@ class TestIndexing(TestCsvData):
 
     def test_get_csv_data_rows(self):
         table_type = 'authors'
-        expected_row_count = 115
+        expected_row_count = 117
         self.assertEqual(len(data.get_csv_data_rows(table_type)), expected_row_count)
         # also test some overflow files for coverage
         table_type = 'abstract'
-        expected_row_count = 9
+        expected_row_count = 10
         self.assertEqual(len(data.get_csv_data_rows(table_type)), expected_row_count)
         table_type = 'ethics'
         expected_row_count = 9
@@ -130,14 +130,14 @@ class TestIndexing(TestCsvData):
     def test_index_authors_on_article_id(self):
         # reload module first to avoid memoize remembering data from other test scenarios
         reload_module(data)
-        expected_row_count = 9
+        expected_row_count = 10
         article_index = data.index_authors_on_article_id()
         self.assertEqual(len(article_index), expected_row_count)
 
     def test_index_authors_on_author_id(self):
         # reload module first to avoid memoize remembering data from other test scenarios
         reload_module(data)
-        expected_row_count = 9
+        expected_row_count = 10
         article_author_index = data.index_authors_on_author_id()
         self.assertEqual(len(article_author_index), expected_row_count)
 

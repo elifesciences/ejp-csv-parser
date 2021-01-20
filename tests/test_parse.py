@@ -115,6 +115,12 @@ class TestParseArticleType(unittest.TestCase):
         self.assertTrue(return_value)
         self.assertEqual(article.article_type, 'research-article')
         self.assertEqual(article.display_channel, 'Research Article')
+        # test id 8
+        fake_get_article_type.return_value = '8'
+        return_value = parse.set_article_type(article, article_id)
+        self.assertTrue(return_value)
+        self.assertEqual(article.article_type, 'discussion')
+        self.assertEqual(article.display_channel, 'Feature Article')
         # test id 10
         fake_get_article_type.return_value = '10'
         return_value = parse.set_article_type(article, article_id)
