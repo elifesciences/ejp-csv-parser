@@ -1,6 +1,7 @@
 #!/bin/bash
-
-tox
-. .tox/py3/bin/activate
-pip install coveralls
-COVERALLS_REPO_TOKEN=$(cat /etc/coveralls/tokens/ejp-csv-parser) coveralls
+set -e
+. mkvenv.sh
+source venv/bin/activate
+pip install coveralls wheel pip pytest --upgrade
+pip install -r requirements.txt
+coverage run -m pytest
