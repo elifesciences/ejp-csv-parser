@@ -1,11 +1,10 @@
 import logging
 import csv
-import sys
 import io
 import os
 from collections import defaultdict, OrderedDict
-import ejpcsvparser.utils as utils
-import ejpcsvparser.settings as settings
+from ejpcsvparser import settings, utils
+
 
 # todo!! clean up these values and the settings
 CSV_PATH = settings.CSV_PATH
@@ -16,9 +15,9 @@ CSV_FILES = settings.CSV_FILES
 COLUMN_HEADINGS = settings.CSV_COLUMN_HEADINGS
 OVERFLOW_CSV_FILES = settings.OVERFLOW_CSV_FILES
 
-LOGGER = logging.getLogger('csv_data')
-HDLR = logging.FileHandler('csv_data.log')
-FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+LOGGER = logging.getLogger("csv_data")
+HDLR = logging.FileHandler("csv_data.log")
+FORMATTER = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 HDLR.setFormatter(FORMATTER)
 LOGGER.addHandler(HDLR)
 LOGGER.setLevel(logging.INFO)
@@ -26,8 +25,10 @@ LOGGER.setLevel(logging.INFO)
 
 def memoize(value):
     "Memoization decorator for functions taking one or more arguments."
+
     class Memodict(dict):
         "Memoization dict"
+
         def __init__(self, value):
             dict.__init__(self)
             self.value = value
@@ -38,6 +39,7 @@ def memoize(value):
         def __missing__(self, key):
             ret = self[key] = self.value(*key)
             return ret
+
     return Memodict(value)
 
 
@@ -63,8 +65,8 @@ def get_csv_col_names(table_type):
     columns_row = []
     for index, row in enumerate(sheet):
         LOGGER.info("in enumerate")
-        LOGGER.info(str(index) + " " + str(row))
-        LOGGER.debug(str(index) + " " + str(ROWS_WITH_COLNAMES))
+        LOGGER.info("%s %s", str(index), str(row))
+        LOGGER.debug("%s %s", str(index), str(ROWS_WITH_COLNAMES))
         if int(index) == int(ROWS_WITH_COLNAMES):
             columns_row = row
     return columns_row
@@ -98,9 +100,9 @@ def join_lines(line_one, line_two, line_number, data_start_row=DATA_START_ROW):
         # keep blank lines found in the headers
         content = line_two
     else:
-        if line_two.lstrip() == '':
+        if line_two.lstrip() == "":
             # blank line outside of the header convert to a space
-            content = line_one.rstrip("\r\n") + u' '
+            content = line_one.rstrip("\r\n") + u" "
         else:
             content = line_one.rstrip("\r\n") + line_two.lstrip()
     return content
@@ -116,16 +118,16 @@ def do_add_line(content, line_number, data_start_row=DATA_START_ROW):
 
 def flatten_lines(iterable, data_start_row=DATA_START_ROW):
     "iterate through an open file and join lines"
-    clean_csv_data = u''
+    clean_csv_data = u""
     line_number = 1
-    prev_line = u''
+    prev_line = u""
     add_line = False
     for content in iterable:
         content = utils.decode_cp1252(content)
         # add the line based on the previous iteration value
         if add_line:
             clean_csv_data += prev_line
-            prev_line = u''
+            prev_line = u""
         prev_line = join_lines(prev_line, content, line_number, data_start_row)
         add_line = do_add_line(content, line_number, data_start_row)
         line_number += 1
@@ -137,11 +139,11 @@ def flatten_lines(iterable, data_start_row=DATA_START_ROW):
 @memoize
 def clean_csv(path):
     "fix CSV file oddities making it difficult to parse"
-    clean_csv_data = u''
+    clean_csv_data = u""
     new_path = os.path.join(TMP_DIR, os.path.split(path)[-1])
-    with open(path, 'r') as open_read_file:
+    with open(path, "r") as open_read_file:
         clean_csv_data = flatten_lines(open_read_file)
-    with open(new_path, 'w') as open_write_file:
+    with open(new_path, "w") as open_write_file:
         open_write_file.write(clean_csv_data)
     return new_path
 
@@ -155,31 +157,30 @@ def get_csv_sheet(table_type):
     path = clean_csv(path)
 
     # https://docs.python.org/3/library/functions.html#open
-    handle = io.open(path, 'r', newline='', encoding='utf-8', errors='surrogateescape')
+    handle = io.open(path, "r", newline="", encoding="utf-8", errors="surrogateescape")
 
     with handle as csvfile:
-        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        csvreader = csv.reader(csvfile, delimiter=",", quotechar='"')
         sheet = []
         for row in csvreader:
             sheet.append(row)
     # For overflow file types, parse again with no quotechar
     if table_type in OVERFLOW_CSV_FILES:
-        csvfile = open(path)
-        csvreader = csv.reader(csvfile, delimiter=',', quotechar=None)
-        if table_type in ["ethics", "datasets"]:
-            join_cells_from = 3
-        else:
-            join_cells_from = 2
-        for row in csvreader:
-            if csvreader.line_num <= DATA_START_ROW:
-                continue
-            # Merge cells 3 to the end because any commas will cause extra columns
-            row[join_cells_from] = ','.join(row[join_cells_from:])
-            for index, cell in enumerate(row):
-                # Strip leading quotation marks
-                row[index] = cell.lstrip('"').rstrip('"')
-            sheet[csvreader.line_num-1] = row
-        csvfile.close()
+        with open(path) as csvfile:
+            csvreader = csv.reader(csvfile, delimiter=",", quotechar=None)
+            if table_type in ["ethics", "datasets"]:
+                join_cells_from = 3
+            else:
+                join_cells_from = 2
+            for row in csvreader:
+                if csvreader.line_num <= DATA_START_ROW:
+                    continue
+                # Merge cells 3 to the end because any commas will cause extra columns
+                row[join_cells_from] = ",".join(row[join_cells_from:])
+                for index, cell in enumerate(row):
+                    # Strip leading quotation marks
+                    row[index] = cell.lstrip('"').rstrip('"')
+                sheet[csvreader.line_num - 1] = row
     return sheet
 
 
@@ -202,7 +203,7 @@ def index_table_on_article_id(table_type):
 
     article_index = defaultdict(list)
     for data_row in data_rows:
-        article_id = get_cell_value('poa_m_ms_no', col_names, data_row)
+        article_id = get_cell_value("poa_m_ms_no", col_names, data_row)
         # author_id = get_cell_value("poa_a_id", col_names, data_row)
         article_index[article_id].append(data_row)
         # print article_id, author_id
@@ -227,7 +228,9 @@ def index_authors_on_author_id():
     author_table = index_authors_on_article_id()
 
     article_ids = author_table.keys()
-    article_author_index = OrderedDict()  # this is the key item we will return our of this function
+    article_author_index = (
+        OrderedDict()
+    )  # this is the key item we will return our of this function
     for article_id in article_ids:
         rows = author_table[article_id]
         author_index = defaultdict()
@@ -241,8 +244,12 @@ def index_authors_on_author_id():
 @memoize
 def get_article_attributes(article_id, attribute_type, attribute_label):
     LOGGER.info("in get_article_attributes")
-    LOGGER.info("article_id: %s attribute_type: %s attribute_label: %s",
-                article_id, attribute_type, attribute_label)
+    LOGGER.info(
+        "article_id: %s attribute_type: %s attribute_label: %s",
+        article_id,
+        attribute_type,
+        attribute_label,
+    )
     attributes = []
     LOGGER.info("about to generate attribute index")
     attribute_index = index_table_on_article_id(attribute_type)
@@ -305,11 +312,15 @@ def get_doi(article_id):
 
 
 def get_article_type(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["article_type"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["article_type"]
+    )
 
 
 def get_accepted_date(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["accepted_date"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["accepted_date"]
+    )
 
 
 def get_received_date(article_id):
@@ -326,40 +337,54 @@ def get_me_id(article_id):
 
 @utils.entities
 def get_me_last_nm(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_last_name"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["editor_last_name"]
+    )
 
 
 @utils.entities
 def get_me_first_nm(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_first_name"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["editor_first_name"]
+    )
 
 
 @utils.entities
 def get_me_middle_nm(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_middle_name"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["editor_middle_name"]
+    )
 
 
 @utils.entities
 def get_me_suffix(article_id):
     try:
-        return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_suffix"])
+        return article_first_value(
+            article_id, "manuscript", COLUMN_HEADINGS["editor_suffix"]
+        )
     except ValueError:
         return None
 
 
 @utils.entities
 def get_me_institution(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_institution"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["editor_institution"]
+    )
 
 
 @utils.entities
 def get_me_department(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_department"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["editor_department"]
+    )
 
 
 @utils.entities
 def get_me_country(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["editor_country"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["editor_country"]
+    )
 
 
 def get_ethics(article_id):
@@ -389,7 +414,9 @@ def get_author_attribute(article_id, author_id, attribute_name):
 
 
 def get_author_position(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_position"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["author_position"]
+    )
 
 
 def get_author_email(article_id, author_id):
@@ -401,40 +428,54 @@ def get_author_contrib_type(article_id, author_id):
 
 
 def get_author_dual_corresponding(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["dual_corresponding"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["dual_corresponding"]
+    )
 
 
 @utils.entities
 def get_author_last_name(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_last_name"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["author_last_name"]
+    )
 
 
 @utils.entities
 def get_author_first_name(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_first_name"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["author_first_name"]
+    )
 
 
 @utils.entities
 def get_author_middle_name(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_middle_name"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["author_middle_name"]
+    )
 
 
 @utils.entities
 def get_author_suffix(article_id, author_id):
     try:
-        return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_suffix"])
+        return get_author_attribute(
+            article_id, author_id, COLUMN_HEADINGS["author_suffix"]
+        )
     except ValueError:
         return None
 
 
 @utils.entities
 def get_author_institution(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_institution"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["author_institution"]
+    )
 
 
 @utils.entities
 def get_author_department(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_department"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["author_department"]
+    )
 
 
 @utils.entities
@@ -444,7 +485,9 @@ def get_author_city(article_id, author_id):
 
 @utils.entities
 def get_author_country(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_country"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["author_country"]
+    )
 
 
 def get_author_state(article_id, author_id):
@@ -452,7 +495,9 @@ def get_author_state(article_id, author_id):
 
 
 def get_author_conflict(article_id, author_id):
-    return get_author_attribute(article_id, author_id, COLUMN_HEADINGS["author_conflict"])
+    return get_author_attribute(
+        article_id, author_id, COLUMN_HEADINGS["author_conflict"]
+    )
 
 
 def get_author_orcid(article_id, author_id):
@@ -460,7 +505,9 @@ def get_author_orcid(article_id, author_id):
 
 
 def get_group_authors(article_id):
-    return article_first_value(article_id, "group_authors", COLUMN_HEADINGS["group_author"])
+    return article_first_value(
+        article_id, "group_authors", COLUMN_HEADINGS["group_author"]
+    )
 
 
 def get_datasets(article_id):
@@ -488,9 +535,11 @@ def index_funding_table():
 
     article_index = OrderedDict()
     for data_row in data_rows:
-        article_id = get_cell_value('poa_m_ms_no', col_names, data_row)
+        article_id = get_cell_value("poa_m_ms_no", col_names, data_row)
         author_id = get_cell_value(COLUMN_HEADINGS["author_id"], col_names, data_row)
-        funder_position = get_cell_value(COLUMN_HEADINGS["funder_position"], col_names, data_row)
+        funder_position = get_cell_value(
+            COLUMN_HEADINGS["funder_position"], col_names, data_row
+        )
 
         # Crude multidimentional dict builder
         if article_id not in article_index:
@@ -522,7 +571,9 @@ def get_funding_ids(article_id):
 def get_funding_attribute(article_id, author_id, funder_position, attribute_name):
     funding_article_index = index_funding_table()
 
-    data_row = funding_article_index[str(article_id)][str(author_id)][str(funder_position)]
+    data_row = funding_article_index[str(article_id)][str(author_id)][
+        str(funder_position)
+    ]
 
     col_names = get_csv_col_names("funding")
     attribute = get_cell_value(attribute_name, col_names, data_row)
@@ -531,18 +582,23 @@ def get_funding_attribute(article_id, author_id, funder_position, attribute_name
 
 def get_funder(article_id, author_id, funder_position):
     return get_funding_attribute(
-        article_id, author_id, funder_position, COLUMN_HEADINGS["funder"])
+        article_id, author_id, funder_position, COLUMN_HEADINGS["funder"]
+    )
 
 
 def get_award_id(article_id, author_id, funder_position):
     return get_funding_attribute(
-        article_id, author_id, funder_position, COLUMN_HEADINGS["award_id"])
+        article_id, author_id, funder_position, COLUMN_HEADINGS["award_id"]
+    )
 
 
 def get_funder_identifier(article_id, author_id, funder_position):
     return get_funding_attribute(
-        article_id, author_id, funder_position, COLUMN_HEADINGS["funder_identifier"])
+        article_id, author_id, funder_position, COLUMN_HEADINGS["funder_identifier"]
+    )
 
 
 def get_funding_note(article_id):
-    return article_first_value(article_id, "manuscript", COLUMN_HEADINGS["funding_note"])
+    return article_first_value(
+        article_id, "manuscript", COLUMN_HEADINGS["funding_note"]
+    )

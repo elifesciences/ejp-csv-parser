@@ -1,9 +1,8 @@
-
 # csv reading settings
 ROWS_WITH_COLNAMES = 3
 DATA_START_ROW = 4
-LESS_THAN_ESCAPE_SEQUENCE = 'LTLT'
-GREATER_THAN_ESCAPE_SEQUENCE = 'GTGT'
+LESS_THAN_ESCAPE_SEQUENCE = "LTLT"
+GREATER_THAN_ESCAPE_SEQUENCE = "GTGT"
 
 CSV_PATH = "tests/test_data/"
 
@@ -22,7 +21,7 @@ CSV_FILES = {
     "group_authors": "poa_group_authors.csv",
     "datasets": "poa_datasets.csv",
     "funding": "poa_funding.csv",
-    "ethics": "poa_ethics.csv"
+    "ethics": "poa_ethics.csv",
 }
 
 # Special files that allow quotation marks in their final column: column 3
@@ -71,5 +70,5 @@ CSV_COLUMN_HEADINGS = {
     "funder_position": "poa_funder_order",
     "funder": "poa_funder",
     "funder_identifier": "poa_fund_ref_id",
-    "funding_note": "poa_m_funding_note"
+    "funding_note": "poa_m_funding_note",
 }
