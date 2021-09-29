@@ -7,12 +7,12 @@ from xml.parsers.expat import ExpatError
 from elifearticle import article as ea
 from elifearticle import utils as eautils
 from elifetools import utils as etoolsutils
-import ejpcsvparser.utils as utils
+from ejpcsvparser import utils
 import ejpcsvparser.csv_data as data
 
-LOGGER = logging.getLogger('parse')
-HDLR = logging.FileHandler('parse.log')
-FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+LOGGER = logging.getLogger("parse")
+HDLR = logging.FileHandler("parse.log")
+FORMATTER = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 HDLR.setFormatter(FORMATTER)
 LOGGER.addHandler(HDLR)
 LOGGER.setLevel(logging.INFO)
@@ -58,8 +58,8 @@ def set_article_type(article, article_id):
     article_type_index = utils.article_type_indexes()
     if article_type_id in article_type_index:
         article_type = article_type_index[str(article_type_id)]
-        article.article_type = article_type['article_type']
-        article.display_channel = article_type['display_channel']
+        article.article_type = article_type["article_type"]
+        article.display_channel = article_type["display_channel"]
         return True
     return False
 
@@ -76,8 +76,15 @@ def set_license(article, article_id):
     if not data_values:
         return False
     # set the object attributes from the data if present
-    for name in ['license_id', 'license_type', 'copyright', 'href',
-                 'name', 'paragraph1', 'paragraph2']:
+    for name in [
+        "license_id",
+        "license_type",
+        "copyright",
+        "href",
+        "name",
+        "paragraph1",
+        "paragraph2",
+    ]:
         eautils.set_attr_if_value(license_object, name, data_values.get(name))
     article.license = license_object
     return True
@@ -96,16 +103,21 @@ def add_date_to_article(article, date_type, date_string):
         try:
             date_struct = time.strptime(date_parts[0], "%Y-%m-%d")
         except ValueError:
-            LOGGER.info("unable to convert date %s given %s for article %s",
-                        date_type, date_parts, article.doi)
+            LOGGER.info(
+                "unable to convert date %s given %s for article %s",
+                date_type,
+                date_parts,
+                article.doi,
+            )
     else:
         return False
 
     if date_string and date_struct:
         article_date = ea.ArticleDate(date_type, date_struct)
         article.add_date(article_date)
-        LOGGER.info("set date_type %s from %s as %s",
-                    date_type, date_string, article_date)
+        LOGGER.info(
+            "set date_type %s from %s as %s", date_type, date_string, article_date
+        )
         return True
     return False
 
@@ -129,8 +141,8 @@ def set_dates(article, article_id):
         return False
 
     # set the license date to be the same as the accepted date
-    if article.get_date('accepted'):
-        date_license = ea.ArticleDate("license", article.get_date('accepted').date)
+    if article.get_date("accepted"):
+        date_license = ea.ArticleDate("license", article.get_date("accepted").date)
         article.add_date(date_license)
     return True
 
@@ -187,7 +199,9 @@ def set_organsims(article, article_id):
     if research_organisms:
         for research_organism in research_organisms:
             if research_organism.strip() != "":
-                article.add_research_organism(utils.convert_to_xml_string(research_organism))
+                article.add_research_organism(
+                    utils.convert_to_xml_string(research_organism)
+                )
     return True
 
 
@@ -204,7 +218,9 @@ def build_author(article_id, author_id, author_type):
     "build an author object with the basic name data"
     first_name = utils.decode_cp1252(data.get_author_first_name(article_id, author_id))
     last_name = utils.decode_cp1252(data.get_author_last_name(article_id, author_id))
-    middle_name = utils.decode_cp1252(data.get_author_middle_name(article_id, author_id))
+    middle_name = utils.decode_cp1252(
+        data.get_author_middle_name(article_id, author_id)
+    )
     suffix = utils.decode_cp1252(data.get_author_suffix(article_id, author_id))
     # initials = middle_name_initials(middle_name)
     if middle_name.strip() != "":
@@ -224,7 +240,8 @@ def author_affiliation(article_id, author_id):
     if department.strip() != "":
         affiliation.department = department
     affiliation.institution = utils.decode_cp1252(
-        data.get_author_institution(article_id, author_id))
+        data.get_author_institution(article_id, author_id)
+    )
     city = utils.decode_cp1252(data.get_author_city(article_id, author_id))
     if city.strip() != "":
         affiliation.city = city
@@ -232,8 +249,9 @@ def author_affiliation(article_id, author_id):
 
     contrib_type = data.get_author_contrib_type(article_id, author_id)
     dual_corresponding = data.get_author_dual_corresponding(article_id, author_id)
-    if (contrib_type == "Corresponding Author" or
-            (dual_corresponding.strip() != '' and int(dual_corresponding.strip()) == 1)):
+    if contrib_type == "Corresponding Author" or (
+        dual_corresponding.strip() != "" and int(dual_corresponding.strip()) == 1
+    ):
         affiliation.email = data.get_author_email(article_id, author_id)
     return affiliation
 
@@ -312,7 +330,7 @@ def set_editor_info(article, article_id):
     middle_name = utils.decode_cp1252(data.get_me_middle_nm(article_id))
     suffix = utils.decode_cp1252(data.get_me_suffix(article_id))
     # no first and last name then return False
-    if not(first_name and last_name):
+    if not (first_name and last_name):
         LOGGER.error("could not set editor")
         return False
     # initials = middle_name_initials(middle_name)
@@ -366,9 +384,13 @@ def set_funding(article, article_id):
         for (funder_article_id, author_id, funder_position) in funder_ids:
             # print (article_id, author_id, funder_position)
             funder_identifier = data.get_funder_identifier(
-                funder_article_id, author_id, funder_position)
-            funder = utils.decode_cp1252(utils.clean_funder(
-                data.get_funder(funder_article_id, author_id, funder_position)))
+                funder_article_id, author_id, funder_position
+            )
+            funder = utils.decode_cp1252(
+                utils.clean_funder(
+                    data.get_funder(funder_article_id, author_id, funder_position)
+                )
+            )
             award_id = data.get_award_id(funder_article_id, author_id, funder_position)
 
             if funder_position not in funding_awards.keys():
@@ -422,18 +444,18 @@ def parse_ethics(ethic):
 
     # Extract comments
     if reparsed:
-        for ethic_type in 'animal_subjects', 'human_subjects':
+        for ethic_type in "animal_subjects", "human_subjects":
             ethic_node = reparsed.getElementsByTagName(ethic_type)[0]
             for node in ethic_node.childNodes:
-                if node.nodeName == 'involved_comments':
+                if node.nodeName == "involved_comments":
                     text_node = node.childNodes[0]
                     ethic_text = text_node.nodeValue
 
                     # Add boilerplate
-                    if ethic_type == 'animal_subjects':
-                        ethic_text = 'Animal experimentation: ' + ethic_text.strip()
-                    elif ethic_type == 'human_subjects':
-                        ethic_text = 'Human subjects: ' + ethic_text.strip()
+                    if ethic_type == "animal_subjects":
+                        ethic_text = "Animal experimentation: " + ethic_text.strip()
+                    elif ethic_type == "human_subjects":
+                        ethic_text = "Human subjects: " + ethic_text.strip()
 
                     # Decode unicode characters
                     ethics.append(utils.entity_to_unicode(ethic_text))
@@ -449,25 +471,25 @@ def parse_dataset_node(dataset_node, dataset_type):
 
     for node in dataset_node.childNodes:
 
-        if node.nodeName == 'authors_text_list' and node.childNodes:
+        if node.nodeName == "authors_text_list" and node.childNodes:
             text_node = node.childNodes[0]
-            for author_name in text_node.nodeValue.split(','):
-                if author_name.strip() != '':
+            for author_name in text_node.nodeValue.split(","):
+                if author_name.strip() != "":
                     dataset.add_author(author_name.lstrip())
 
-        if node.nodeName == 'title':
+        if node.nodeName == "title":
             text_node = node.childNodes[0]
             dataset.title = utils.entity_to_unicode(text_node.nodeValue)
 
-        if node.nodeName == 'id':
+        if node.nodeName == "id":
             text_node = node.childNodes[0]
             dataset.source_id = utils.entity_to_unicode(text_node.nodeValue)
 
-        if node.nodeName == 'license_info':
+        if node.nodeName == "license_info":
             text_node = node.childNodes[0]
             dataset.license_info = utils.entity_to_unicode(text_node.nodeValue)
 
-        if node.nodeName == 'year' and node.childNodes:
+        if node.nodeName == "year" and node.childNodes:
             text_node = node.childNodes[0]
             dataset.year = utils.entity_to_unicode(text_node.nodeValue)
 
@@ -500,17 +522,20 @@ def parse_datasets(datasets_content):
 
     # Extract comments
     if reparsed:
-        for dataset_type in 'datasets', 'prev_published_datasets':
+        for dataset_type in "datasets", "prev_published_datasets":
             datasets_nodes = reparsed.getElementsByTagName(dataset_type)[0]
             for dataset_node in datasets_nodes.getElementsByTagName("dataset"):
                 datasets.append(parse_dataset_node(dataset_node, dataset_type))
 
         # Parse the data availability statement
-        if reparsed.getElementsByTagName('data_availability_textbox'):
-            data_availability_node = reparsed.getElementsByTagName('data_availability_textbox')
+        if reparsed.getElementsByTagName("data_availability_textbox"):
+            data_availability_node = reparsed.getElementsByTagName(
+                "data_availability_textbox"
+            )
             if data_availability_node[0].childNodes:
                 data_availability = utils.entity_to_unicode(
-                    data_availability_node[0].childNodes[0].nodeValue)
+                    data_availability_node[0].childNodes[0].nodeValue
+                )
 
     return parse_status, datasets, data_availability
 
@@ -533,14 +558,14 @@ def parse_group_authors(group_authors):
         #  add the the dictionary using some steps
 
         # Split the string on the first delimiter
-        group_author_list = group_authors.split('order_start')
+        group_author_list = group_authors.split("order_start")
 
         for group_author_string in group_author_list:
             if group_author_string == "":
                 continue
 
             # Now split on the second delimiter
-            position_and_name = group_author_string.split('order_end')
+            position_and_name = group_author_string.split("order_end")
 
             author_position = position_and_name[0]
 
@@ -568,14 +593,26 @@ def build_article(article_id):
 
     # Run each of the below functions to build the article object components
     article_set_functions = [
-        set_title, set_abstract, set_article_type, set_license, set_dates, set_ethics,
-        set_datasets, set_categories, set_organsims, set_author_info, set_editor_info,
-        set_keywords, set_funding]
+        set_title,
+        set_abstract,
+        set_article_type,
+        set_license,
+        set_dates,
+        set_ethics,
+        set_datasets,
+        set_categories,
+        set_organsims,
+        set_author_info,
+        set_editor_info,
+        set_keywords,
+        set_funding,
+    ]
     for set_function in article_set_functions:
         if not set_function(article, article_id):
             error_count = error_count + 1
-            error_messages.append("article_id " + str(article_id)
-                                  + " error in " + set_function.__name__)
+            error_messages.append(
+                "article_id " + str(article_id) + " error in " + set_function.__name__
+            )
 
     # Building from CSV data it must be a POA type, set it
     if article:
@@ -585,7 +622,9 @@ def build_article(article_id):
 
     # default conflict text
     if article:
-        article.conflict_default = "The authors declare that no competing interests exist."
+        article.conflict_default = (
+            "The authors declare that no competing interests exist."
+        )
 
     if error_count == 0:
         return article, error_count, error_messages
