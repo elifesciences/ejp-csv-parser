@@ -1,6 +1,5 @@
-elifetools==0.11.0
-elifearticle==0.6.0
-GitPython==3.1.2
 configparser==3.5.0
+elifearticle==0.6.0
+elifetools==0.11.0
+GitPython==3.1.2
 mock==1.3.0
-coverage==5.1
