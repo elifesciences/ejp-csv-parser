@@ -3,7 +3,7 @@ import csv
 import io
 import os
 from collections import defaultdict, OrderedDict
-from ejpcsvparser import settings, utils
+from ejpcsvparser import LOGGER, settings, utils
 
 
 # todo!! clean up these values and the settings
@@ -14,13 +14,6 @@ DATA_START_ROW = settings.DATA_START_ROW
 CSV_FILES = settings.CSV_FILES
 COLUMN_HEADINGS = settings.CSV_COLUMN_HEADINGS
 OVERFLOW_CSV_FILES = settings.OVERFLOW_CSV_FILES
-
-LOGGER = logging.getLogger("csv_data")
-HDLR = logging.FileHandler("csv_data.log")
-FORMATTER = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-HDLR.setFormatter(FORMATTER)
-LOGGER.addHandler(HDLR)
-LOGGER.setLevel(logging.INFO)
 
 
 def memoize(value):

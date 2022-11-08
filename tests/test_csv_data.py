@@ -1,6 +1,8 @@
 import unittest
+import os
 from six.moves import reload_module
 from mock import patch
+from ejpcsvparser import configure_logging
 from ejpcsvparser import csv_data as data
 
 from tests import csv_test_settings
@@ -110,6 +112,15 @@ class TestCleanCsv(TestCsvData):
 
 
 class TestIndexing(TestCsvData):
+    def setUp(self):
+        # configure logging
+        self.log_filename = "tests/tmp/csv_data.log"
+        configure_logging(self.log_filename)
+
+    def tearDown(self):
+        # remve the log file
+        os.remove(self.log_filename)
+
     def test_get_csv_path(self):
         path_type = "authors"
         expected = "tests/test_data/poa_author.csv"
@@ -124,6 +135,12 @@ class TestIndexing(TestCsvData):
             "poa_l_license_dt",
         ]
         self.assertEqual(data.get_csv_col_names(table_type), expected)
+        # check for log file contents
+        with open(self.log_filename, "r", encoding="utf-8") as open_file:
+            self.assertTrue(
+                "INFO ejpcsvparser:csv_data:get_csv_sheet: tests/test_data/poa_license.csv"
+                in open_file.read()
+            )
 
     def test_get_csv_data_rows(self):
         table_type = "authors"

@@ -7,15 +7,8 @@ from xml.parsers.expat import ExpatError
 from elifearticle import article as ea
 from elifearticle import utils as eautils
 from elifetools import utils as etoolsutils
-from ejpcsvparser import utils
+from ejpcsvparser import LOGGER, utils
 import ejpcsvparser.csv_data as data
-
-LOGGER = logging.getLogger("parse")
-HDLR = logging.FileHandler("parse.log")
-FORMATTER = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-HDLR.setFormatter(FORMATTER)
-LOGGER.addHandler(HDLR)
-LOGGER.setLevel(logging.INFO)
 
 
 def instantiate_article(article_id):
