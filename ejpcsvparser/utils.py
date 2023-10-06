@@ -110,13 +110,13 @@ def entity_to_unicode(string):
         return string
     # Selected character replacements that have been seen
     replacements = []
-    replacements.append((r"&alpha;", u"\u03b1"))
-    replacements.append((r"&beta;", u"\u03b2"))
-    replacements.append((r"&gamma;", u"\u03b3"))
-    replacements.append((r"&delta;", u"\u03b4"))
-    replacements.append((r"&epsilon;", u"\u03b5"))
-    replacements.append((r"&ordm;", u"\u00ba"))
-    replacements.append((r"&iuml;", u"\u00cf"))
+    replacements.append((r"&alpha;", "\u03b1"))
+    replacements.append((r"&beta;", "\u03b2"))
+    replacements.append((r"&gamma;", "\u03b3"))
+    replacements.append((r"&delta;", "\u03b4"))
+    replacements.append((r"&epsilon;", "\u03b5"))
+    replacements.append((r"&ordm;", "\u00ba"))
+    replacements.append((r"&iuml;", "\u00cf"))
     replacements.append((r"&ldquo;", '"'))
     replacements.append((r"&rdquo;", '"'))
 

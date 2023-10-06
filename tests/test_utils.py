@@ -11,14 +11,14 @@ class TestUtils(unittest.TestCase):
         passes.append(
             (
                 "N-terminal &#x03B1;-helix into the heterodimer interface",
-                u"N-terminal \u03b1-helix into the heterodimer interface",
+                "N-terminal \u03b1-helix into the heterodimer interface",
             )
         )
 
         passes.append(
             (
                 "N-terminal &alpha;-helix into the heterodimer interface",
-                u"N-terminal \u03b1-helix into the heterodimer interface",
+                "N-terminal \u03b1-helix into the heterodimer interface",
             )
         )
 
@@ -30,8 +30,8 @@ class TestUtils(unittest.TestCase):
                     + "&rdquo;"
                 ),
                 (
-                    u"\xa0 \xc5 \xd7 \xef \u0394 \u03b1 \u03b2 \u03b3 \u03ba \u03bb \u2212 \u223c "
-                    + u'\u03b1 &amp; \u03b2 \u03b5 \xcf " \xba "'
+                    "\xa0 \xc5 \xd7 \xef \u0394 \u03b1 \u03b2 \u03b3 \u03ba \u03bb \u2212 \u223c "
+                    + '\u03b1 &amp; \u03b2 \u03b5 \xcf " \xba "'
                 ),
             )
         )
@@ -46,10 +46,10 @@ class TestUtils(unittest.TestCase):
         passes.append(
             (
                 "N-terminal &#x03B1;-helix into the heterodimer interface",
-                u"N-terminal &#x03B1;-helix into the heterodimer interface",
+                "N-terminal &#x03B1;-helix into the heterodimer interface",
             )
         )
-        passes.append(("<i>i</i>", u"&lt;i&gt;i&lt;/i&gt;"))
+        passes.append(("<i>i</i>", "&lt;i&gt;i&lt;/i&gt;"))
         for string_input, string_output in passes:
             self.assertEqual(utils.escape_angle_brackets(string_input), string_output)
 
