@@ -278,13 +278,13 @@ class TestParseEthics(unittest.TestCase):
         self.assertEqual(
             article.ethics,
             [
-                u"Animal experimentation: All surgical procedures and experiments were conducted "
-                + u"according to the German federal animal welfare guidelines and were approved by the "
-                + u"animal ethics committee responsible for T\xfcbingen, Germany (Regierungspraesidium "
-                + u"T\xfcbingen) under protocol numbers 3/07 and 5/09. Animals were deeply "
-                + u"anaesthetized with Urethane (1.6-2 mg/kg), with the depth of anesthesia maintained "
-                + u"throughout the course of the experiment with supplementary doses as required. "
-                + u"Every attempt was made to ensure minimum discomfort to the animals at all times."
+                "Animal experimentation: All surgical procedures and experiments were conducted "
+                + "according to the German federal animal welfare guidelines and were approved by the "
+                + "animal ethics committee responsible for T\xfcbingen, Germany (Regierungspraesidium "
+                + "T\xfcbingen) under protocol numbers 3/07 and 5/09. Animals were deeply "
+                + "anaesthetized with Urethane (1.6-2 mg/kg), with the depth of anesthesia maintained "
+                + "throughout the course of the experiment with supplementary doses as required. "
+                + "Every attempt was made to ensure minimum discomfort to the animals at all times."
             ],
         )
         # test not finding a value, currently still returns True
@@ -352,7 +352,7 @@ class TestParseDatasets(unittest.TestCase):
         # check data availability
         self.assertEqual(
             article.data_availability,
-            u'\u2022Data Availability text <italic>"here"</italic> & such',
+            '\u2022Data Availability text <italic>"here"</italic> & such',
         )
 
         # test not finding a value, currently still returns True
@@ -399,10 +399,10 @@ class TestParseOrganisms(unittest.TestCase):
         self.assertEqual(
             article.research_organisms,
             [
-                u"<italic>B. subtilis</italic>",
-                u"<italic>D. melanogaster</italic>",
-                u"<italic>E. coli</italic>",
-                u"Mouse",
+                "<italic>B. subtilis</italic>",
+                "<italic>D. melanogaster</italic>",
+                "<italic>E. coli</italic>",
+                "Mouse",
             ],
         )
         # test not finding a value, currently still returns True
