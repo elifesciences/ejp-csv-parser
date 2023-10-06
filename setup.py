@@ -12,7 +12,12 @@ setup(
     long_description_content_type="text/markdown",
     packages=["ejpcsvparser"],
     license="MIT",
-    install_requires=["elifearticle", "GitPython", "configparser"],
+    install_requires=[
+        "elifearticle>=0.17.0",
+        "elifetools>=0.33.0",
+        "GitPython",
+        "configparser",
+    ],
     url="https://github.com/elifesciences/ejp-csv-parser",
     maintainer="eLife Sciences Publications Ltd.",
     maintainer_email="tech-team@elifesciences.org",

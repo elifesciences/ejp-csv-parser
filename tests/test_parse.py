@@ -557,7 +557,7 @@ class TestParseFunding(unittest.TestCase):
         self.assertEqual(len(article.funding_awards), 2)
         award = article.funding_awards[0]
         self.assertEqual(award.award_group_id, None)
-        self.assertEqual(award.award_ids, ["1R01NS066936"])
+        self.assertEqual(award.awards[0].award_id, "1R01NS066936")
         self.assertEqual(
             award.institution_name,
             "National Institute of Neurological Disorders and Stroke",

@@ -394,7 +394,9 @@ def set_funding(article, article_id):
                 if funder_identifier and funder_identifier.strip() != "":
                     funding_awards[funder_position].institution_id = funder_identifier
                 if award_id and award_id.strip() != "":
-                    funding_awards[funder_position].add_award_id(award_id)
+                    award_object = ea.Award()
+                    award_object.award_id = award_id
+                    funding_awards[funder_position].add_award(award_object)
 
     # Second pass, add the primary award recipients in article author order
     for position in sorted(funding_awards.keys()):
