@@ -95,7 +95,7 @@ def join_lines(line_one, line_two, line_number, data_start_row=DATA_START_ROW):
     else:
         if line_two.lstrip() == "":
             # blank line outside of the header convert to a space
-            content = line_one.rstrip("\r\n") + u" "
+            content = line_one.rstrip("\r\n") + " "
         else:
             content = line_one.rstrip("\r\n") + line_two.lstrip()
     return content
@@ -111,16 +111,16 @@ def do_add_line(content, line_number, data_start_row=DATA_START_ROW):
 
 def flatten_lines(iterable, data_start_row=DATA_START_ROW):
     "iterate through an open file and join lines"
-    clean_csv_data = u""
+    clean_csv_data = ""
     line_number = 1
-    prev_line = u""
+    prev_line = ""
     add_line = False
     for content in iterable:
         content = utils.decode_cp1252(content)
         # add the line based on the previous iteration value
         if add_line:
             clean_csv_data += prev_line
-            prev_line = u""
+            prev_line = ""
         prev_line = join_lines(prev_line, content, line_number, data_start_row)
         add_line = do_add_line(content, line_number, data_start_row)
         line_number += 1
@@ -132,7 +132,7 @@ def flatten_lines(iterable, data_start_row=DATA_START_ROW):
 @memoize
 def clean_csv(path):
     "fix CSV file oddities making it difficult to parse"
-    clean_csv_data = u""
+    clean_csv_data = ""
     new_path = os.path.join(TMP_DIR, os.path.split(path)[-1])
     with open(path, "r") as open_read_file:
         clean_csv_data = flatten_lines(open_read_file)

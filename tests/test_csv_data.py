@@ -217,7 +217,7 @@ class TestKeywords(TestCsvData):
 class TestTitle(TestCsvData):
     def test_get_title(self):
         article_id = 3
-        expected = u"""This, 'title, includes "quotation", marks & more \xfc"""
+        expected = """This, 'title, includes "quotation", marks & more \xfc"""
         self.assertEqual(data.get_title(article_id), expected)
 
 
