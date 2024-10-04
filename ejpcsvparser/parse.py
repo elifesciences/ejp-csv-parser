@@ -64,7 +64,7 @@ def set_license(article, article_id):
         return False
     license_id = data.get_license(article_id)
     license_object = ea.License(license_id)
-    data_values = utils.license_data(license_id)
+    data_values = eautils.license_data(license_id)
     # if no data to populate the license return False
     if not data_values:
         return False

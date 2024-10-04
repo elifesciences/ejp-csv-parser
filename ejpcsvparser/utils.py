@@ -67,40 +67,6 @@ def article_type_indexes():
     return article_type_index
 
 
-def license_data(license_id):
-    "boilerplate data to populate a license object keyed on the license_id"
-    license_data = OrderedDict()
-    if not license_id:
-        return license_data
-    if int(license_id) == 1:
-        license_data["license_id"] = license_id
-        license_data["license_type"] = "open-access"
-        license_data["copyright"] = True
-        license_data["href"] = "http://creativecommons.org/licenses/by/4.0/"
-        license_data["name"] = "Creative Commons Attribution License"
-        license_data[
-            "paragraph1"
-        ] = "This article is distributed under the terms of the "
-        license_data["paragraph2"] = (
-            " permitting unrestricted use and redistribution provided that the "
-            + "original author and source are credited."
-        )
-    elif int(license_id) == 2:
-        license_data["license_id"] = license_id
-        license_data["license_type"] = "open-access"
-        license_data["copyright"] = False
-        license_data["href"] = "http://creativecommons.org/publicdomain/zero/1.0/"
-        license_data["name"] = "Creative Commons CC0"
-        license_data["paragraph1"] = (
-            "This is an open-access article, free of all copyright, and may be "
-            + "freely reproduced, distributed, transmitted, modified, built upon, or "
-            + "otherwise used by anyone for any lawful purpose. The work is made "
-            + "available under the "
-        )
-        license_data["paragraph2"] = " public domain dedication."
-    return license_data
-
-
 def entity_to_unicode(string):
     """
     Quick convert unicode HTML entities to unicode characters
