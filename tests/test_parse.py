@@ -176,7 +176,7 @@ class TestParseLicense(unittest.TestCase):
         return_value = parse.set_license(article, "12")
         self.assertTrue(return_value)
         self.assertIsNotNone(article.license, "did not create a license")
-        self.assertEqual(article.license.license_id, "1")
+        self.assertEqual(article.license.license_id, 1)
         self.assertEqual(article.license.license_type, "open-access")
         self.assertEqual(article.license.copyright, True)
         self.assertEqual(
@@ -190,7 +190,7 @@ class TestParseLicense(unittest.TestCase):
         self.assertEqual(
             article.license.paragraph2,
             (
-                " permitting unrestricted use and redistribution provided that the original "
+                ", which permits unrestricted use and redistribution provided that the original "
                 + "author and source are credited."
             ),
         )
@@ -199,13 +199,15 @@ class TestParseLicense(unittest.TestCase):
         return_value = parse.set_license(article, "2935")
         self.assertTrue(return_value)
         self.assertIsNotNone(article.license, "did not create a license")
-        self.assertEqual(article.license.license_id, "2")
+        self.assertEqual(article.license.license_id, 2)
         self.assertEqual(article.license.license_type, "open-access")
         self.assertEqual(article.license.copyright, False)
         self.assertEqual(
             article.license.href, "http://creativecommons.org/publicdomain/zero/1.0/"
         )
-        self.assertEqual(article.license.name, "Creative Commons CC0")
+        self.assertEqual(
+            article.license.name, "Creative Commons CC0 public domain dedication"
+        )
         self.assertEqual(
             article.license.paragraph1,
             (
@@ -214,7 +216,7 @@ class TestParseLicense(unittest.TestCase):
                 + "used by anyone for any lawful purpose. The work is made available under the "
             ),
         )
-        self.assertEqual(article.license.paragraph2, " public domain dedication.")
+        self.assertEqual(article.license.paragraph2, ".")
         # test not finding a value
         article = Article()
         return_value = parse.set_license(article, "99999")

@@ -13,7 +13,7 @@ setup(
     packages=["ejpcsvparser"],
     license="MIT",
     install_requires=[
-        "elifearticle>=0.16.0",
+        "elifearticle>=0.20.0",
         "elifetools>=0.33.0",
         "GitPython",
         "configparser",
