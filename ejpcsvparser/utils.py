@@ -72,26 +72,7 @@ def entity_to_unicode(string):
     Quick convert unicode HTML entities to unicode characters
     using a regular expression replacement
     """
-    if not string:
-        return string
-    # Selected character replacements that have been seen
-    replacements = []
-    replacements.append((r"&alpha;", "\u03b1"))
-    replacements.append((r"&beta;", "\u03b2"))
-    replacements.append((r"&gamma;", "\u03b3"))
-    replacements.append((r"&delta;", "\u03b4"))
-    replacements.append((r"&epsilon;", "\u03b5"))
-    replacements.append((r"&ordm;", "\u00ba"))
-    replacements.append((r"&iuml;", "\u00cf"))
-    replacements.append((r"&ldquo;", '"'))
-    replacements.append((r"&rdquo;", '"'))
-
-    # First, replace numeric entities with unicode
-    string = re.sub(r"&#x(....);", eautils.repl, string)
-    # Second, replace some specific entities specified in the list
-    for entity, replacement in replacements:
-        string = re.sub(entity, replacement, string)
-    return string
+    return etoolsutils.entity_to_unicode(string)
 
 
 def entities(function):
